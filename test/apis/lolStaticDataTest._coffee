@@ -4,8 +4,8 @@ url = require 'url'
 querystring = require 'querystring'
 {expect} = require 'chai'
 
-testUtils = require './testUtils'
-lol = require '../src/lol'
+testUtils = require '../testUtils'
+lol = require '../../src/lol'
 
 describe 'lol-static-data API', ->
     it 'should fetch champions by id', (_) ->
