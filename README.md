@@ -58,8 +58,8 @@ takes a configuation object with the following options:
 Functions
 =========
 
-You can browse the well-documented code in the `src/apis` folder for a complete description of
-all the functions you can call.  Each file in `src/apis` is a mixin object which is added to the
+You can browse the well-documented code in the `src/api` folder for a complete description of
+all the functions you can call.  Each file in `src/api` is a mixin object which is added to the
 client object's prototype.
 
 Caching

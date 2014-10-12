@@ -172,9 +172,9 @@ module.exports = class Client extends EventEmitter
 
 # Copy methods from the various API implementations to Client.
 apis = [
-    require('./apis/lolStaticData')
-    require('./apis/match')
-    require('./apis/summoner')
+    require('./api/lolStaticData')
+    require('./api/match')
+    require('./api/summoner')
 ]
 for api in apis
     ld.extend Client::, api.methods
