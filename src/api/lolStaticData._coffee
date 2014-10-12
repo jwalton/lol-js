@@ -72,6 +72,22 @@ exports.methods = {
         champions = @getChampions(options, _)
         return champions.data[key]
 
+    getChampionByName: optCb 3, (name, options, _) ->
+        options = ld.extend {}, options, {dataById: false}
+        champions = @getChampions(options, _)
+
+        # First try the name as a key, because this is the fastest way to do this.
+        answer = champions.data[name]
+
+        # If this doesn't work, try searching for a champion with the same name, ignoring
+        # punctuation and case.
+        if !answer?
+            championsByName = ld.indexBy champions.data, (c) ->
+                c.name.toLowerCase().replace(/\W/g, '')
+            answer = championsByName[name.toLowerCase().replace(/\W/g, '')]
+
+        return answer
+
     # Retrieve a list of items.
     #
     # Parameters:

@@ -13,7 +13,8 @@ module.exports = class RedisCache
 
     get: (params, _) ->
         try
-            return @client.get params.key, _
+            answer = @client.get params.key, _
+            return JSON.parse answer
         catch err
             # Ignore error
             return null
@@ -21,3 +22,6 @@ module.exports = class RedisCache
     set: (params, value) ->
         @client.set params.key, JSON.stringify(value)
         @client.expire params.key, params.ttl
+
+    destroy: ->
+        @client.quit()

@@ -44,6 +44,7 @@ module.exports = class Client extends EventEmitter
                         options.cache.set(params, value)
                     catch err
                         @emit 'cacheSetError', err
+                destroy: -> options.cache.destroy?()
 
             }
         else
@@ -57,6 +58,10 @@ module.exports = class Client extends EventEmitter
         @_cacheHits = 0
         @_cacheMisses = 0
         @_request = require 'request'
+
+    # Destroy this client.
+    destroy: ->
+        @cache.destroy()
 
     # Return cache statistics
     getCacheStats: -> {hits: @_cacheHits, misses: @_cacheMisses}
@@ -105,10 +110,8 @@ module.exports = class Client extends EventEmitter
 
         answer = @cache.get cacheParams, _
         if answer?
-            @_cacheHits++
             if answer is "none" then answer = null
         else
-            @_cacheMisses++
             answer = @_riotRequest params, _
             @cache.set cacheParams, answer ? "none"
 

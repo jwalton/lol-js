@@ -7,7 +7,7 @@ module.exports = class InMemoryCache
         answer = @cache[params.key]
         if answer?
             if Date.now() > answer.expires then answer = null else answer = answer.value
-        cb null, @cache[params.key]
+        cb null, answer
 
     set: (params, value) ->
         @cache[params.key] = {

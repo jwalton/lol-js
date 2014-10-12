@@ -31,3 +31,13 @@ describe 'lol-static-data API', ->
 
         expect(champion).to.exist
         expect(champion.name).to.equal "Vel'Koz"
+
+    it 'should fetch champions by name', (_) ->
+        client = lol.client {apiKey: 'TESTKEY'}
+        testUtils.expectRequest(client,
+            "https://na.api.pvp.net/api/lol/static-data/na/v1.2/champion",
+            {dataById: 'false'},
+            'staticChampions.json')
+
+        champion = client.getChampionByName "Vel koz", _
+        expect(champion.name).to.equal "Vel'Koz"

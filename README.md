@@ -35,6 +35,7 @@ var lolClient = lol.client({
 };
 lolClient.getChampionById(53, {champData: 'all'}, function(err, data) {
     console.log("Found ", data.name);
+    lolClient.destroy();
 });
 ```
 
@@ -78,7 +79,7 @@ types exist:
   to `'loljs-'`.
 
 If you don't want to use one of the built in cache types, you can easily specify your own caching
-functions.  The `cache` parameter passed to a new client is a `{set, get}` object, where
+functions.  The `cache` parameter passed to a new client is a `{set, get, destroy}` object, where
 `set(params, value)` stores an object in the cache, and `get(params, callback)`
 is a function which retrieves an object from the cache and calls `callback(err, value)` returning
 the cached value or `null` if the value is not available.  In both cases, params is an object
@@ -98,6 +99,9 @@ When calling `cache.set()`, lol-js may pass in `"none"` in place of a value to i
 does not exist.  `cache.get()` should return `"none"` if such a params object is passed in.
 lol-js will always try to retrieve an object from the cache first, and will only make a REST
 request if the cached object is not available.
+
+Finally, if the cache defines a `destroy()` function, this will be called when the lol-js client
+is destroyed.
 
 TODO
 ====
