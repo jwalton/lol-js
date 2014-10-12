@@ -88,11 +88,19 @@ module.exports = class Client extends EventEmitter
         else if response.statusCode is 404
             answer = null
         else if response.statusCode isnt 200
-            throw new Error("Error retrieving data: #{response.statusCode}")
+            throw new Error("Error calling #{params.caller}: #{response.statusCode}")
         else
             answer = JSON.parse body
 
         return answer
+
+    _validateCacheParams: (cacheParams) ->
+        # cacheParams can be passed to third party cache providers, so it's important we
+        # provide a consistent interface.  Therefore, blow up here if we're missing
+        # any cache parameters.
+        for key in ['key', 'api', 'objectType', 'region', 'params']
+            if !(key of cacheParams) then throw new Error "Missing #{key} in cacheParams."
+        cacheParams.ttl ?= @cacheTTL.short
 
     # Make a request to the Riot API, but automatically check the cache for results first and
     # store results in the cache.
@@ -101,13 +109,7 @@ module.exports = class Client extends EventEmitter
     # * `cacheParams` is a `{key, ttl, api, objectType, region, params}` object, as decsribed
     #   in the README.md file in the cache section.
     _riotRequestWithCache: (params, cacheParams, _) ->
-        # cacheParams can be passed to third party cache providers, so it's important we
-        # provide a consistent interface.  Therefore, blow up here if we're missing
-        # any cache parameters.
-        for key in ['key', 'api', 'objectType', 'region', 'params']
-            if !(key of cacheParams) then throw new Error "Missing #{key} in cacheParams."
-        cacheParams.ttl ?= @cacheTTL.short
-
+        @_validateCacheParams(cacheParams)
         answer = @cache.get cacheParams, _
         if answer?
             if answer is "none" then answer = null
@@ -122,10 +124,12 @@ module.exports = class Client extends EventEmitter
     # which automates this.
     #
     # Parameters:
+    # * `caller` is the name of the public client function calling _riotMultiGet.
     # * `baseUrl` the base URL to fetch from.
     # * `ids` the list of IDs to pass.
-    # * `getCacheParamsFn(region, id, options)` - Called to get cache params for an id.
-    # * `cacheResultFn(region, result, options)` - Called to write a single result to the cache.
+    # * `getCacheParamsFn(client, region, id, options)` - Called to get cache params for an id.
+    # * `cacheResultFn(client, region, result, options)` - Called to write a single result to the
+    #   cache.
     #   If null, then result of `getCacheParamsFn()` will be used.
     # * `queryParams` is query params to pass to the Riot API.
     # * `options.region` is used to determine the region.  `options` is also passed on to the
@@ -133,7 +137,7 @@ module.exports = class Client extends EventEmitter
     #
     # Returns a map where keys are the `ids` passed in, and values are either object returned
     # from Riot or `null` if the objects can't be found.
-    _riotMultiGet: (baseUrl, ids, urlSuffix, getCacheParamsFn, cacheResultFn, queryParams, options, _) ->
+    _riotMultiGet: (caller, baseUrl, ids, urlSuffix, getCacheParamsFn, cacheResultFn, queryParams, options, _) ->
         region = options?.region ? @defaultRegion
         if !ld.isArray ids then ids = [ids]
 
@@ -142,7 +146,8 @@ module.exports = class Client extends EventEmitter
 
         # Try to fetch each object from the cache
         for id in ids
-            cacheParams = getCacheParamsFn region, id, options
+            cacheParams = getCacheParamsFn this, region, id, options
+            @_validateCacheParams(cacheParams)
             object = @cache.get cacheParams, _
             if object is "none"
                 answer[id] = null
@@ -154,6 +159,7 @@ module.exports = class Client extends EventEmitter
         # If we couldn't find some objects, go fetch them from Riot
         if missingObjects.length > 0
             fetchedObjects = @_riotRequest {
+                caller: caller,
                 region: region,
                 url: "#{baseUrl}/#{ld.pluck(missingObjects, "id").join ","}#{urlSuffix}"
                 queryParams: queryParams
@@ -165,7 +171,7 @@ module.exports = class Client extends EventEmitter
                 answer[id] = fetchedObjects[fetchedId] ? null
 
                 if answer[id]? and cacheResultsFn?
-                    cacheResultFn region, answer[id], options
+                    cacheResultFn this, region, answer[id], options
                 else
                     @cache.set cacheParams, (answer[id] ? "none")
 

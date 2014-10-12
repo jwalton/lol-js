@@ -8,10 +8,6 @@ api = exports.api = {
 }
 
 exports.methods = {
-    _cacheSummoner: (region, summoner) ->
-        @cache.set summonerByIdCacheParams(region, summoner.id), summoner
-        @cache.set summonerByNameCacheParams(region, summoner.name), summoner
-
     # Get one or more summoners by name.
     #
     # Parameters:
@@ -24,10 +20,10 @@ exports.methods = {
     # is not found, it will be returned as `null` in the results.
     getSummonersByName: optCb 3, (summonerNames, options, _) ->
         region = options.region ? @defaultRegion
-        @_riotMultiGet(
+        @_riotMultiGet("getSummonersByName",
             "#{@_makeUrl region, api}/by-name", summonerNames, "",
             summonerByNameCacheParams,
-            @_cacheSummoner,
+            cacheSummoner,
             null, options, _
         )
 
@@ -43,7 +39,7 @@ exports.methods = {
     # is not found, it will be returned as `null` in the results.
     getSummonersById: optCb 3, (summonerIds, options, _) ->
         region = options.region ? @defaultRegion
-        @_riotMultiGet(
+        @_riotMultiGet("getSummonersById",
             "#{@_makeUrl region, api}", summonerIds, "",
             summonerByIdCacheParams('summoner'),
             null, null, options, _
@@ -70,7 +66,7 @@ exports.methods = {
     # a given summoner ID is not found, the value will be `null` in the results.
     getSummonerMasteries: optCb 3, (summonerIds, options, _) ->
         region = options.region ? @defaultRegion
-        @_riotMultiGet(
+        @_riotMultiGet("getSummonerMasteries",
             "#{@_makeUrl region, api}", summonerIds, "/masteries",
             summonerByIdCacheParams('masteries'),
             null, null, options, _
@@ -87,21 +83,26 @@ exports.methods = {
     # a given summoner ID is not found, the value will be `null` in the results.
     getSummonerRunes: optCb 3, (summonerIds, options, _) ->
         region = options.region ? @defaultRegion
-        @_riotMultiGet(
+        @_riotMultiGet("getSummonerRunes",
             "#{@_makeUrl region, api}", summonerIds, "/runes",
             summonerByIdCacheParams('runes'),
             null, null, options, _
         )
 }
 
-summonerByNameCacheParams = (region, summonerName) -> {
+
+cacheSummoner = (client, region, summoner) ->
+    client.cache.set summonerByIdCacheParams(this, region, summoner.id), summoner
+    client.cache.set summonerByNameCacheParams(this, region, summoner.name), summoner
+
+summonerByNameCacheParams = (client, region, summonerName) -> {
         key: "#{api.fullname}-summonerByName-#{region}-#{summonerName.toLowerCase()}"
         api, region,
         objectType: 'summonerByName'
         params: {summonerName: summonerName.toLowerCase()}
     }
 
-summonerByIdCacheParams = (objectType) -> (region, summonerId) -> {
+summonerByIdCacheParams = (objectType) -> (client, region, summonerId) -> {
         key: "#{api.fullname}-#{objectType}-#{region}-#{summonerId}"
         api, region,
         objectType: objectType

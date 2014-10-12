@@ -25,6 +25,7 @@ exports.methods = {
         region = options.region ? @defaultRegion
 
         requestParams = {
+            caller: "getMatch",
             region: region,
             url: "#{@_makeUrl region, api}/#{matchId}",
             queryParams: {includeTimeline: options.includeTimeline}

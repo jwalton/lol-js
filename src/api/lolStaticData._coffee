@@ -38,6 +38,7 @@ exports.methods = {
         region = options.region ? @defaultRegion
 
         requestParams = {
+            caller: "getChampions",
             region: region,
             url: "#{makeUrl region, api}/champion",
             queryParams: ld.pick options, ['locale', 'version', 'dataById', 'champData']
@@ -115,6 +116,7 @@ exports.methods = {
         region = options.region ? @defaultRegion
 
         requestParams = {
+            caller: "getItems",
             region: region,
             url: "#{makeUrl region, api}/item",
             queryParams: ld.pick options, ['locale', 'version', 'tags']
@@ -147,6 +149,7 @@ exports.methods = {
         region = options?.region ? @defaultRegion
 
         requestParams = {
+            caller: "getVersions",
             region: region,
             url: "#{makeUrl region, api}/versions",
             rateLimit: false
