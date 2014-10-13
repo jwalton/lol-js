@@ -1,6 +1,6 @@
 {
   "name": "lol-js",
-  "description": "Node.js bindings for the Riot API, with caching and rate limitng",
+  "description": "Node.js bindings for the Riot API, with caching and rate limiting",
   "keywords": [
     "Riot",
     "Riot Games",
