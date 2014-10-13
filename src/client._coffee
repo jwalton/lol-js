@@ -120,13 +120,18 @@ module.exports = class Client extends EventEmitter
     # * `params` is identical to `params` from `_riotRequest()`.
     # * `cacheParams` is a `{key, ttl, api, objectType, region, params}` object, as decsribed
     #   in the README.md file in the cache section.
-    _riotRequestWithCache: (params, cacheParams, _) ->
+    # * `options.preCache(value, cb)` - If provided, this will be passed the raw value from
+    #   `_riotRequest` before the value is cached.  This allows us to manipulate the data
+    #   prior to caching.
+    #
+    _riotRequestWithCache: (params, cacheParams, options, _) ->
         @_validateCacheParams(cacheParams)
         answer = @cache.get cacheParams, _
         if answer?
             if answer is "none" then answer = null
         else
             answer = @_riotRequest params, _
+            if options.preCache? then options.preCache answer, _
             @cache.set cacheParams, answer ? "none"
 
         return answer

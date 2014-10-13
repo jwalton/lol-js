@@ -46,7 +46,7 @@ exports.methods = {
                 "#{if options.dataById then 't' else 'f'}-#{(options.champData ? []).join ','}"
             api, region, objectType: 'champions', params: requestParams.queryParams
         }
-        @_riotRequestWithCache requestParams, cacheParams, _
+        @_riotRequestWithCache requestParams, cacheParams, {}, _
 
     # Retrieve a champion using its ID.
     #
@@ -121,7 +121,7 @@ exports.methods = {
                 options.tags.join(",")
             api, region, objectType: 'items', params: requestParams.queryParams
         }
-        @_riotRequestWithCache requestParams, cacheParams, _
+        @_riotRequestWithCache requestParams, cacheParams, {}, _
 
     # Retrieve an item using its ID.
     #
@@ -152,7 +152,7 @@ exports.methods = {
             key: "#{api.fullname}-versions-#{region}"
             api, region, objectType: 'versions', params: {}
         }
-        @_riotRequestWithCache requestParams, cacheParams, _
+        @_riotRequestWithCache requestParams, cacheParams, {}, _
 
     # Converts a team name ("red" or "blue") to a team ID (100, 200).
     teamNameToId: (teamName) ->

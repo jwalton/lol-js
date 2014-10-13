@@ -25,6 +25,30 @@ describe 'match API', ->
             expect(populated).to.equal 1
             expect(match.participantIdentities[0].player.summonerName).to.equal "SummonerA"
 
+        it 'should populate players in a match and cache them', (_) ->
+            client = lol.client { apiKey: 'TESTKEY', cache: lol.inMemoryCache() }
+            testUtils.expectRequests client, [
+                {
+                    url: "https://na.api.pvp.net/api/lol/na/v2.2/match/1514152049?includeTimeline=false"
+                    sampleFile: 'match/normal.json'
+                }
+                {
+                    url: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/1"
+                    sampleFile: 'summoner/byId.json'
+                }
+            ]
+
+            match = client.getMatch 1514152049, {
+                players: [{championId: 120, teamId: 100, summonerId: 1}]
+            },_
+
+            expect(match.participantIdentities[0].player.summonerName).to.equal "SummonerA"
+
+            # Try to fetch the match without populating it - should still be populated since
+            # we cached the populated version.
+            cachedMatch = client.getMatch 1514152049, _
+            expect(match.participantIdentities[0].player.summonerName).to.equal "SummonerA"
+
     describe '_loadPlayers()', ->
         checkLoadedPlayers = (loadedPlayers) ->
             expect(loadedPlayers.length).to.equal 2

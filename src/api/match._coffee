@@ -19,8 +19,11 @@ exports.methods = {
     #   to the construtor.
     # * `options.includeTimeline` - Flag indicating whether or not to include match timeline data.
     #   Defaults to `true`.
+    # * `options.players` - same as the `players` parameter to `populateMatch()`.  If `players`
+    #   is passed here, then the populated version of the match will be stored in the cache,
+    #   preventing the need to re-populate it later.
     #
-    getMatch: optCb 3, (matchId, options, done) ->
+    getMatch: optCb 3, (matchId, options, _) ->
         options = ld.defaults {}, options, {
             region: @defaultRegion
             includeTimeline: false
@@ -40,7 +43,11 @@ exports.methods = {
             objectType: 'match'
             params: {matchId, includeTimeline: options.includeTimeline}
         }
-        @_riotRequestWithCache requestParams, cacheParams, done
+        requestOptions = {}
+        if options.players?
+            requestOptions.preCache = (match, _) => @populateMatch match, options.players, _
+
+        @_riotRequestWithCache requestParams, cacheParams, requestOptions, _
 
     # When non-ranked matches are fetched via the `getMatch()`, they have empty
     # `participantIdentities`.  In other words, you don't know which summoners are playing which
@@ -60,8 +67,14 @@ exports.methods = {
     #
     # Returns the number of participantIdentities that were filled in.
     populateMatch: (match, players, _) ->
+        assert(ld.isArray(players), "'players' must be an array!")
+
         # If all participantIdentity objects are populated, we have nothing to do, so check this first.
         return 0 if ld.every(match.participantIdentities, "player")
+
+        # TODO: If less than 10 players are passed in, can we do a quick check to see if all
+        # the players are here before we call @_loadPlayers?  This could potentially save us
+        # some API calls.
 
         populated = 0
 
