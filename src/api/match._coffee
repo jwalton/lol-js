@@ -23,7 +23,7 @@ exports.methods = {
     #   is passed here, then the populated version of the match will be stored in the cache,
     #   preventing the need to re-populate it later.
     #
-    getMatch: optCb 3, (matchId, options, _) ->
+    getMatch: optCb (matchId, options, _) ->
         options = ld.defaults {}, options, {
             region: @defaultRegion
             includeTimeline: false

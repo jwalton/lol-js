@@ -5,7 +5,7 @@ describe 'utils', ->
     describe 'optCb', ->
         it 'should pass through a callback if it exists', ->
             results = null
-            fn = utils.optCb 2, (options, done) ->
+            fn = utils.optCb (options, done) ->
                 results = {options, done}
 
             fn("a", "b")
@@ -14,7 +14,7 @@ describe 'utils', ->
 
         it "should generate empty options if they don't exist", ->
             results = null
-            fn = utils.optCb 2, (options, done) ->
+            fn = utils.optCb (options, done) ->
                 results = {options, done}
 
             fn("b")

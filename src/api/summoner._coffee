@@ -18,7 +18,7 @@ exports.methods = {
     # Returns a hash where keys are summoner names and values are
     # `{id, name, profileIconId, revsionData, summonerLevel}` objects.  If a given summoner name
     # is not found, it will be returned as `null` in the results.
-    getSummonersByName: optCb 3, (summonerNames, options, _) ->
+    getSummonersByName: optCb (summonerNames, options, _) ->
         region = options.region ? @defaultRegion
         @_riotMultiGet("getSummonersByName",
             "#{@_makeUrl region, api}/by-name", summonerNames, "",
@@ -37,7 +37,7 @@ exports.methods = {
     # Returns a hash where keys are summoner IDs and values are
     # `{id, name, profileIconId, revsionData, summonerLevel}` objects.  If a given summoner ID
     # is not found, it will be returned as `null` in the results.
-    getSummonersById: optCb 3, (summonerIds, options, _) ->
+    getSummonersById: optCb (summonerIds, options, _) ->
         region = options.region ? @defaultRegion
         @_riotMultiGet("getSummonersById",
             "#{@_makeUrl region, api}", summonerIds, "",
@@ -51,7 +51,7 @@ exports.methods = {
     # fetches full summoner records and then maps them.  This increases the likelyhood that we'll
     # find the appropriate records in the cache.
     #
-    getSummonerNames: optCb 3, (summonerIds, options, _) ->
+    getSummonerNames: optCb (summonerIds, options, _) ->
         summoners = @getSummonersById summonerIds, options, _
         return ld.mapValues summoners, (x) -> x?.name ? null
 
@@ -64,7 +64,7 @@ exports.methods = {
     #
     # Returns a hash where keys are summoner IDs and values are `{pages, summonerId}` objects.  If
     # a given summoner ID is not found, the value will be `null` in the results.
-    getSummonerMasteries: optCb 3, (summonerIds, options, _) ->
+    getSummonerMasteries: optCb (summonerIds, options, _) ->
         region = options.region ? @defaultRegion
         @_riotMultiGet("getSummonerMasteries",
             "#{@_makeUrl region, api}", summonerIds, "/masteries",
@@ -81,7 +81,7 @@ exports.methods = {
     #
     # Returns a hash where keys are summoner IDs and values are `{pages, summonerId}` objects.  If
     # a given summoner ID is not found, the value will be `null` in the results.
-    getSummonerRunes: optCb 3, (summonerIds, options, _) ->
+    getSummonerRunes: optCb (summonerIds, options, _) ->
         region = options.region ? @defaultRegion
         @_riotMultiGet("getSummonerRunes",
             "#{@_makeUrl region, api}", summonerIds, "/runes",

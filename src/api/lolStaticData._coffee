@@ -27,7 +27,7 @@ exports.methods = {
     #   'altimages', 'blurb', 'enemytips', 'image', 'info', 'lore', 'partype', 'passive',
     #   'recommended', 'skins', 'spells', 'stats', 'tags'.
     #
-    getChampions: optCb 2, (options, _) ->
+    getChampions: optCb (options, _) ->
         options = ld.defaults {}, options, {
             region: @defaultRegion,
             dataById: false
@@ -54,7 +54,7 @@ exports.methods = {
     # * `id` - the ID of the champion to retrieve.
     # * `options` are the same as for `getChampions()`, except that `dataById` cannot be specified.
     #
-    getChampionById: optCb 3, (id, options, _) ->
+    getChampionById: optCb (id, options, _) ->
         options = ld.extend {}, options, {dataById: true}
         champions = @getChampions(options, _)
         return champions.data[id]
@@ -65,12 +65,12 @@ exports.methods = {
     # * `id` - the ID of the champion to retrieve.
     # * `options` are the same as for `getChampions()`, except that `dataById` cannot be specified.
     #
-    getChampionByKey: optCb 3, (key, options, _) ->
+    getChampionByKey: optCb (key, options, _) ->
         options = ld.extend {}, options, {dataById: false}
         champions = @getChampions(options, _)
         return champions.data[key]
 
-    getChampionByName: optCb 3, (name, options, _) ->
+    getChampionByName: optCb (name, options, _) ->
         options = ld.extend {}, options, {dataById: false}
         champions = @getChampions(options, _)
 
@@ -102,7 +102,7 @@ exports.methods = {
     #    inStore, into, maps, requiredChampion, sanitizedDescription, specialRecipe, stacks, stats,
     #    tags, tree
     #
-    getItems: optCb 2, (options, _) ->
+    getItems: optCb (options, _) ->
         options = ld.defaults {}, options, {
             region: @defaultRegion,
             dataById: false
@@ -129,7 +129,7 @@ exports.methods = {
     # * `id` - the ID of the item to retrieve.
     # * `options` are the same as for `getItems()`.
     #
-    getItemById: optCb 3, (id, options, _) ->
+    getItemById: optCb (id, options, _) ->
         objects = @getItems(options, _)
         return objects.data[id]
 
@@ -139,7 +139,7 @@ exports.methods = {
     #
     # Parameters:
     # * `options.region` - Region from which to retrieve data.
-    getVersions: optCb 2, (options, _) ->
+    getVersions: optCb (options, _) ->
         region = options?.region ? @defaultRegion
 
         requestParams = {
