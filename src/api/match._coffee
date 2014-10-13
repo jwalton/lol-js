@@ -140,4 +140,17 @@ exports.methods = {
 
         return answer
 
+    # Figure out which team a given summoner is on.
+    # Returns the teamId, or null if the summoner could not be found.
+    getTeamIdForSummonerId: (match, summonerId) ->
+        participantIdentity = ld.find match.participantIdentities, {player: {summonerId}}
+
+        if !participantIdentity?
+            answer = null
+        else
+            participantId = participantIdentity.participantId
+            participant = ld.find match.participants, {participantId}
+            answer = participant.teamId
+
+        return answer
 }
