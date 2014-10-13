@@ -1,6 +1,8 @@
 {EventEmitter} = require 'events'
 querystring = require 'querystring'
 ld = require 'lodash'
+fs = require 'fs'
+path = require 'path'
 
 RateLimiter = require './rateLimiter'
 
@@ -180,10 +182,8 @@ module.exports = class Client extends EventEmitter
     _makeUrl: (region, api) -> "https://#{region}.api.pvp.net/api/lol/#{region}/#{api.version}/#{api.name}"
 
 # Copy methods from the various API implementations to Client.
-apis = [
-    require('./api/lolStaticData')
-    require('./api/match')
-    require('./api/summoner')
-]
-for api in apis
-    ld.extend Client::, api.methods
+do ->
+    for moduleFile in fs.readdirSync(path.join(__dirname, "api"))
+        moduleName = path.basename(moduleFile, path.extname(moduleFile))
+        api = require "./api/#{moduleName}"
+        ld.extend Client::, api.methods
