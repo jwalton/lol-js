@@ -8,16 +8,18 @@ module.exports = class RedisCache
             port: 6379
             keyPrefix: 'loljs-'
         }
+        @keyPrefix = options.keyPrefix
 
         @client = redis.createClient(options.port, options.host)
 
     get: (params, _) ->
-        answer = @client.get params.key, _
+        answer = @client.get "#{@keyPrefix}-#{params.key}", _
         return JSON.parse answer
 
     set: (params, value) ->
-        @client.set params.key, JSON.stringify(value)
-        @client.expire params.key, params.ttl
+        key = "#{@keyPrefix}-#{params.key}"
+        @client.set key, JSON.stringify(value)
+        @client.expire key, params.ttl
 
     destroy: ->
         @client.quit()
