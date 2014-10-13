@@ -30,10 +30,7 @@ exports.methods = {
     getChampions: optCb 2, (options, _) ->
         options = ld.defaults {}, options, {
             region: @defaultRegion,
-            locale: null,
-            version: null,
-            dataById: false,
-            champData: []
+            dataById: false
         }
         region = options.region ? @defaultRegion
 
@@ -46,7 +43,7 @@ exports.methods = {
         }
         cacheParams = {
             key: "#{api.fullname}-champions-#{region}-#{options.locale}-#{options.version}-" +
-                "#{if options.dataById then 't' else 'f'}-#{options.champData.join ','}"
+                "#{if options.dataById then 't' else 'f'}-#{(options.champData ? []).join ','}"
             api, region, objectType: 'champions', params: requestParams.queryParams
         }
         @_riotRequestWithCache requestParams, cacheParams, _
@@ -108,10 +105,7 @@ exports.methods = {
     getItems: optCb 2, (options, _) ->
         options = ld.defaults {}, options, {
             region: @defaultRegion,
-            locale: null,
-            version: null,
-            dataById: false,
-            champData: []
+            dataById: false
         }
         region = options.region ? @defaultRegion
 
@@ -160,4 +154,7 @@ exports.methods = {
         }
         @_riotRequestWithCache requestParams, cacheParams, _
 
+    # Converts a team name ("red" or "blue") to a team ID (100, 200).
+    teamNameToId: (teamName) ->
+        if teamName.toLowerCase() is "blue" then 100 else 200
 }
