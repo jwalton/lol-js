@@ -103,6 +103,11 @@ request if the cached object is not available.
 Finally, if the cache defines a `destroy()` function, this will be called when the lol-js client
 is destroyed.
 
+Development
+===========
+
+If you're interested in contributing, check out the [development docs](./docs/development.md).
+
 TODO
 ====
 
