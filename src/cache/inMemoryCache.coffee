@@ -8,7 +8,7 @@ module.exports = class InMemoryCache
         if !params.key? then cb new Error("Missing key")
         cacheEntry = @cache[params.key]
         if cacheEntry?
-            answer = if Date.now() > cacheEntry.expires
+            answer = if cacheEntry.expires? and (Date.now() > cacheEntry.expires)
                 null
             else
                 ld.cloneDeep cacheEntry.value
@@ -16,6 +16,6 @@ module.exports = class InMemoryCache
 
     set: (params, value) ->
         @cache[params.key] = {
-            expires: Date.now() + params.ttl * 1000
+            expires: if params.ttl? then (Date.now() + params.ttl * 1000) else null
             value: ld.cloneDeep(value)
         }

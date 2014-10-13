@@ -50,8 +50,8 @@ takes a configuation object with the following options:
 * `cache` - a cache object or `null` to disable caching (see below).
 * `cacheTTL` - a `{long, short}` object which controls how long objects are cached
   for.  Each is a value in seconds.  `long` applies to match objects, which don't change very
-  often.  Most objects are cached for the `short` duration.  Default is a month for long and
-  5 minutes for short.
+  often.  Most objects are cached for the `short` duration.  Default is forever for `long` and
+  5 minutes for `short`.
 * `rateLimit` - a list of limit objects.  Each limit object is a `{time, limit}` pair where `time`
   is a duration in seconds and `limit` is the maximum number of requests to make in that
   duration.  Defaults to `[{time: 10, limit: 10}, {time: 600, limit: 500}]`.
@@ -86,7 +86,8 @@ the cached value or `null` if the value is not available.  In both cases, params
 consisting of:
 
 * `params.key` - A string which uniquely identifies this object.
-* `params.ttl` - The suggested length, in seconds, to cache the object for.
+* `params.ttl` - The suggested length, in seconds, to cache the object for.  `null` if the object
+  can be cached forever.
 * `params.api` - A `{name, version}` object (e.g. `{name: 'match', version: 'v2.2'}`.)
 * `params.objectType` - The type of object being cached.  This is always a string consisting of
   only letters.

@@ -19,7 +19,7 @@ module.exports = class RedisCache
     set: (params, value) ->
         key = "#{@keyPrefix}-#{params.key}"
         @client.set key, JSON.stringify(value)
-        @client.expire key, params.ttl
+        if params.ttl? then @client.expire key, params.ttl
 
     destroy: ->
         @client.quit()

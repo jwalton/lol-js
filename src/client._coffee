@@ -25,8 +25,8 @@ module.exports = class Client extends EventEmitter
         @apiKey = options.apiKey
         @defaultRegion = options.defaultRegion ? 'na'
         @cacheTTL = options.cacheTTL ? {
-            short: 60 * 5            # 5 minutes
-            long:  60 * 60 * 24 * 31 # 31 days
+            short: 60 * 5  # 5 minutes
+            long:  null    # Forever
         }
 
         if options.cache?
