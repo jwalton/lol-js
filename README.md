@@ -107,3 +107,4 @@ TODO
 ====
 
 * Add a logging framework.
+* Add some integration tests that go round-trip to the Riot server.

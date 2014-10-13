@@ -39,12 +39,14 @@ module.exports = class Client extends EventEmitter
                         if answer? then @_cacheHits++ else @_cacheMisses++
                         return answer
                     catch err
+                        @_cacheErrors++
                         @emit 'cacheGetError', err
                         return null
                 set: (params, value) =>
                     try
                         options.cache.set(params, value)
                     catch err
+                        @_cacheErrors++
                         @emit 'cacheSetError', err
                 destroy: -> options.cache.destroy?()
 
@@ -59,6 +61,8 @@ module.exports = class Client extends EventEmitter
         @_queuedRequests = []
         @_cacheHits = 0
         @_cacheMisses = 0
+        @_cacheErrors = 0
+        @_hitRateLimit = 0
         @_request = require 'request'
 
     # Destroy this client.
@@ -66,7 +70,12 @@ module.exports = class Client extends EventEmitter
         @cache.destroy()
 
     # Return cache statistics
-    getCacheStats: -> {hits: @_cacheHits, misses: @_cacheMisses}
+    getStats: -> {
+        hits: @_cacheHits,
+        misses: @_cacheMisses
+        errors: @_cacheErrors
+        rateLimitErros: @_hitRateLimit
+    }
 
     # Make a request to the Riot API.
     #
@@ -86,6 +95,7 @@ module.exports = class Client extends EventEmitter
         [response, body] = @_request url, [_]
         if response.statusCode is 429
             # Hit rate limit.  Try again later.
+            @_hitRateLimit++
             answer = @_riotRequest params, _
         else if response.statusCode is 404
             answer = null

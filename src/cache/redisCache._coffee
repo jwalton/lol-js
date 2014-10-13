@@ -12,12 +12,8 @@ module.exports = class RedisCache
         @client = redis.createClient(options.port, options.host)
 
     get: (params, _) ->
-        try
-            answer = @client.get params.key, _
-            return JSON.parse answer
-        catch err
-            # Ignore error
-            return null
+        answer = @client.get params.key, _
+        return JSON.parse answer
 
     set: (params, value) ->
         @client.set params.key, JSON.stringify(value)
