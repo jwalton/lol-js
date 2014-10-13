@@ -39,7 +39,7 @@ api = exports.api = {
 }
 
 exports.methods = {
-    getRecentGamesForSummoner: (summonerId, _) ->
+    getRecentGamesForSummoner: optCb (summonerId, options, _) ->
         ...
 }
 ```
@@ -50,9 +50,15 @@ write a function in one API that calls into a function in another API, it is bes
 [assert](http://nodejs.org/api/assert.html#assert_assert_value_message_assert_ok_value_message)
 that the other API's version is what you expect it to be; this way when Riot changes an API,
 we'll be sure to catch all the places where we need to update functions to deal with the changes.
+The `api` object is also handy for using the `_makeUrl` helper function.
 
 `methods` is a hash of functions which will be mixed in to the `Client` class's prototype.  These
 methods can call into methods in the core `Client` class or even into methods defined in other APIs.
+
+Note here we are defining a function with the `optCb` helper.  `optCb` is passed a function where
+the last two arguments are `options` and the callback.  `optCb` makes it so this function can be
+calls as either `getRecentGamesForSummoner(summonerId, done)` or as
+`getRecentGamesForSummoner(summonerId, options, done)`.
 
 Writing API Modules
 ===================
@@ -67,7 +73,7 @@ core methods in the `Client` class which you can use to easily implement your AP
 * `Client._riotRequestWithCache(params, cacheParams, options, done)` is similar to `_riotRequest()`,
   but automatically caches results.  `params` is identical to the `params` object passed to
   `_riotRequest()`.  `cacheParams` is the params object which will be passed to `cache.get()`
-  and `cache.set()`.
+  and `cache.set()`.  See below for more details on `cacheParams`.
 * There are many Riot APIs where you can pass a comma delimited list of IDs or names in the URL,
   and get back a hash where keys are IDs and values are the values you want to request.
   `Client._riotMultiGet(...)` was written to deal with these cases; it caches each value by ID
@@ -79,3 +85,28 @@ core methods in the `Client` class which you can use to easily implement your AP
   Here, we've already retrieved summoner 1 and 2 in the first call, so there should be no need to
   fetch summoner 1 again in the second call.  `_riotMultiGet()` takes care of caching this common
   case automatically.
+
+  All of the above methods require you to pass a URL to fetch data from.  Most (but not all) Riot
+  APIs follow the same pattern for APIs, so you can use the `_makeUrl()` function to generate a
+  URL for you:
+
+  ```
+  url = "#{@_makeUrl region, api}/by-summoner/#{summonerId}/recent"
+  ```
+
+### cacheParams
+
+`cacheParams` is a `{key, region, api, ttl, objectType, params}` object which is passed to
+cache.get and cache.set.  Most cache implementations will probably only need the `key`, but some
+cache implementations (like writing to an SQL database) may want more fine grained control, so
+we pass this extra data.
+
+The key must uniquely identify the resource being retrieved.  The usual format is a dash separated
+string of the format:
+
+    "#{api.fullname}-#{objectType}-#{region}-#{paramsWithDashes}"
+
+Any parameters which we pass up to the Riot API should be in `paramsWithDashes`.
+
+The `ttl` should generally be either `@cacheTTL.long` or `@cacheTTL.short`.  If you don't pass a
+`ttl`, it defaults to `@cacheTTL.short`.

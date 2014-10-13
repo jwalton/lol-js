@@ -30,6 +30,7 @@
     "url": "https://github.com/jwalton/lol-js"
   },
   "dependencies": {
+    "async": "^0.9.0",
     "limiter": "^1.0.5",
     "lodash": "^2.4.1",
     "redis": "^0.12.1",

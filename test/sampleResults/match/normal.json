@@ -365,7 +365,7 @@
          },
          "spell2Id": 4,
          "participantId": 2,
-         "championId": 89,
+         "championId": 39,
          "teamId": 100,
          "spell1Id": 3
       },
@@ -1069,7 +1069,7 @@
          },
          "spell2Id": 4,
          "participantId": 6,
-         "championId": 103,
+         "championId": 99,
          "teamId": 200,
          "spell1Id": 14
       },
