@@ -45,7 +45,7 @@ exports.methods = {
         }
         requestOptions = {}
         if options.players?
-            requestOptions.preCache = (match, _) => @populateMatch match, options.players, _
+            requestOptions.preCache = (match, _) => @populateMatch match, options.players, options, _
 
         @_riotRequestWithCache requestParams, cacheParams, requestOptions, _
 
@@ -55,18 +55,22 @@ exports.methods = {
     # a game using `getRecentGamesForSummoner()`) then you can use this function to fill in
     # the `participantIdentities` field.
     #
-    # `match` is a match record returned from `getMatch()`.
+    # Note that the `matchHistoryUri` is not populated in `participantIdentities`.
     #
-    # `players` is an array of player descriptors which, ideally, are
-    # `{championId, teamId, summonerId}` objects (e.g. the `fellowPlayers` field in a game returned by
-    # `getRecentGamesForSummoner()`.)  You can replace `championId` with `championKey` and provide a
-    # chamion key or a champion name.  You can similarly replace `summonerId` with `summonerName`.  You
-    # can also replace `teamId` with `team` which should be either "red" or "blue".
+    # Paramaters:
+    # * `match` is a match record returned from `getMatch()`.
+    # * `players` is an array of player descriptors which, ideally, are
+    #   `{championId, teamId, summonerId}` objects (e.g. the `fellowPlayers` field in a game
+    #   returned by `getRecentGamesForSummoner()`.)  You can replace `championId` with `championKey`
+    #   and provide a chamion key or a champion name.  You can similarly replace `summonerId` with
+    #   `summonerName`.  You can also replace `teamId` with `team` which should be either "red" or
+    #   "blue".
+    # * `options.region` - The region of the summoner.  Defaults to the `defaultRegion` passed
+    #   to the construtor.
     #
-    # Note that the `matchHistoryUri` not populated in `participantIdentities`.
+    # Returns the number of participantIdentities that were filled in, via the callback.
     #
-    # Returns the number of participantIdentities that were filled in.
-    populateMatch: (match, players, _) ->
+    populateMatch: optCb (match, players, options, _) ->
         assert(ld.isArray(players), "'players' must be an array!")
 
         # If all participantIdentity objects are populated, we have nothing to do, so check this first.
@@ -78,7 +82,7 @@ exports.methods = {
 
         populated = 0
 
-        playerData = @_loadPlayers players, _
+        playerData = @_loadPlayers players, options, _
 
         participantIdentitiesById = ld.indexBy match.participantIdentities, "participantId"
         for participant in match.participants
@@ -106,7 +110,7 @@ exports.methods = {
     # objects, return a collection of `{championId, teamId, summoner}` objects.  `summoner` will be
     # a Riot API object.  If there are any objects where the given champion or summoner cannot be
     # loaded, these results will be omitted from the returned data.
-    _loadPlayers: (players, _) ->
+    _loadPlayers: optCb (players, options, _) ->
         # Since we're relying on other APIs, we assert here so that if those APIs change, we'll get
         # unit test failures if we don't update this method.
         assert.equal(summonerApi.api.version, "v1.4", "Can't load players - summoner API version has changed.")
@@ -116,14 +120,14 @@ exports.methods = {
         # Fetch summoners by ID if available
         summonerIds = ld(players).filter('summonerId').map('summonerId').value()
         summonersById = if summonerIds.length > 0
-            @getSummonersById(summonerIds, _)
+            @getSummonersById(summonerIds, options, _)
         else
             {}
 
         # Only pull data for summoners where we don't have an ID.
         summonerNames = ld(players).reject('summonerId').map("summonerName").value()
         summonersByName = if summonerNames.length > 0
-            @getSummonersByName(summonerNames, _)
+            @getSummonersByName(summonerNames, options, _)
         else
             {}
 
@@ -141,7 +145,7 @@ exports.methods = {
             else
                 # Use `getChampionByName()`, because it will always try to get by key first, but
                 # it is much more forgiving than `getChampionByKey()`.
-                champion = @getChampionByName(player.championKey, _)
+                champion = @getChampionByName(player.championKey, options, _)
                 champion?.id
 
             if summoner? and championId?

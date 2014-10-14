@@ -49,6 +49,24 @@ describe 'match API', ->
             cachedMatch = client.getMatch 1514152049, _
             expect(match.participantIdentities[0].player.summonerName).to.equal "SummonerA"
 
+        it 'should populate players correctly when the default region differs', (_) ->
+            client = lol.client { apiKey: 'TESTKEY', cache: lol.inMemoryCache(), defaultRegion: 'ru' }
+            testUtils.expectRequests client, [
+                {
+                    url: "https://na.api.pvp.net/api/lol/na/v2.2/match/1514152049?includeTimeline=false"
+                    sampleFile: 'match/normal.json'
+                }
+                {
+                    url: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/1"
+                    sampleFile: 'summoner/byId.json'
+                }
+            ]
+
+            match = client.getMatch 1514152049, {
+                region: 'na'
+                players: [{championId: 120, teamId: 100, summonerId: 1}]
+            },_
+
     describe '_loadPlayers()', ->
         checkLoadedPlayers = (loadedPlayers) ->
             expect(loadedPlayers.length).to.equal 2

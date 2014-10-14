@@ -18,7 +18,7 @@ describe 'game API', ->
         expect(games.matches).to.not.exist
 
     it 'should fetch recent matches for a summoner', (_) ->
-        client = lol.client { apiKey: 'TESTKEY', cache: lol.inMemoryCache() }
+        client = lol.client { apiKey: 'TESTKEY', cache: lol.inMemoryCache(), defaultRegion: "ru" }
         testUtils.expectRequests client, [
             {
                 url: "https://na.api.pvp.net/api/lol/na/v1.3/game/by-summoner/24125166/recent"
@@ -38,7 +38,7 @@ describe 'game API', ->
             }
         ]
 
-        games = client.getRecentGamesForSummoner 24125166, {asMatches: true},  _
+        games = client.getRecentGamesForSummoner 24125166, {region: "na", asMatches: true},  _
 
         expect(games.games.length).to.equal 2
         expect(games.matches).to.exist
