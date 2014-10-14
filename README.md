@@ -7,6 +7,7 @@ Features
 ========
 
 * Support for the following APIs:
+  * game-v1.3
   * lol-static-data-v1.2 (partial)
   * match-v2.2
   * summoner-v1.4
