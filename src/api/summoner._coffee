@@ -7,11 +7,16 @@ api = exports.api = {
     version: "v1.4"
 }
 
+MAX_SUMMONER_NAMES_PER_REQUEST = 40
+MAX_SUMMONER_IDS_PER_REQUEST = 40
+
 exports.methods = {
     # Get one or more summoners by name.
     #
     # Parameters:
-    # * `summonerNames` - An array of summoner names.
+    # * `summonerNames` - An array of summoner names.  Note the Riot API only allows you to
+    #   pass 40 summoner names in a single request; you can pass more than 40 here, but it will
+    #   result in multiple requests.
     # * `options.region` - The region of the summoner.  Defaults to the `defaultRegion` passed
     #   to the construtor.
     #
@@ -24,7 +29,7 @@ exports.methods = {
             "#{@_makeUrl region, api}/by-name", summonerNames, "",
             summonerByNameCacheParams,
             cacheSummoner,
-            null, options, _
+            null, MAX_SUMMONER_NAMES_PER_REQUEST, options, _
         )
 
     # Get one or more summoners by ID.
@@ -42,7 +47,7 @@ exports.methods = {
         @_riotMultiGet("getSummonersById",
             "#{@_makeUrl region, api}", summonerIds, "",
             summonerByIdCacheParams('summoner'),
-            null, null, options, _
+            null, null, MAX_SUMMONER_IDS_PER_REQUEST, options, _
         )
 
     # Get the names for one or more summonerIds.
@@ -69,7 +74,7 @@ exports.methods = {
         @_riotMultiGet("getSummonerMasteries",
             "#{@_makeUrl region, api}", summonerIds, "/masteries",
             summonerByIdCacheParams('masteries'),
-            null, null, options, _
+            null, null, MAX_SUMMONER_IDS_PER_REQUEST, options, _
         )
 
     # Get one or more summoner's runes.
@@ -86,7 +91,7 @@ exports.methods = {
         @_riotMultiGet("getSummonerRunes",
             "#{@_makeUrl region, api}", summonerIds, "/runes",
             summonerByIdCacheParams('runes'),
-            null, null, options, _
+            null, null, MAX_SUMMONER_IDS_PER_REQUEST, options, _
         )
 }
 

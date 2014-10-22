@@ -3,6 +3,7 @@ querystring = require 'querystring'
 ld = require 'lodash'
 fs = require 'fs'
 path = require 'path'
+async = require 'async'
 
 RateLimiter = require './rateLimiter'
 
@@ -190,12 +191,14 @@ module.exports = class Client extends EventEmitter
     #   cache.
     #   If null, then result of `getCacheParamsFn()` will be used.
     # * `queryParams` is query params to pass to the Riot API.
+    # * `maxObjs` is the maximum number of ids to pull in a single request.
     # * `options.region` is used to determine the region.  `options` is also passed on to the
     #   `getCacheParamsFn` and `cacheResultFn`.
     #
     # Returns a map where keys are the `ids` passed in, and values are either object returned
     # from Riot or `null` if the objects can't be found.
-    _riotMultiGet: (caller, baseUrl, ids, urlSuffix, getCacheParamsFn, cacheResultFn, queryParams, options, _) ->
+    _riotMultiGet: (caller, baseUrl, ids, urlSuffix, getCacheParamsFn, cacheResultFn, queryParams,
+            maxObjs, options, _) ->
         region = options?.region ? @defaultRegion
         if !ld.isArray ids then ids = [ids]
 
@@ -216,22 +219,26 @@ module.exports = class Client extends EventEmitter
 
         # If we couldn't find some objects, go fetch them from Riot
         if missingObjects.length > 0
-            fetchedObjects = @_riotRequest {
-                caller: caller,
-                region: region,
-                url: "#{baseUrl}/#{ld.pluck(missingObjects, "id").join ","}#{urlSuffix}"
-                queryParams: queryParams
-            }, _
-            fetchedObjects ?= {}
-            for {id, cacheParams} in missingObjects
-                # Note that Riot always returns summoner name keys as all lower case.
-                fetchedId = if ld.isString(id) then id.toLowerCase() else id
-                answer[id] = fetchedObjects[fetchedId] ? null
+            groups = for i in [0...Math.ceil(missingObjects.length/maxObjs)]
+                missingObjects.slice(i*maxObjs, i*maxObjs + maxObjs)
+            async.each groups, ( (group, _) =>
+                fetchedObjects = @_riotRequest {
+                    caller: caller,
+                    region: region,
+                    url: "#{baseUrl}/#{ld.pluck(group, "id").join ","}#{urlSuffix}"
+                    queryParams: queryParams
+                }, _
+                fetchedObjects ?= {}
+                for {id, cacheParams} in missingObjects
+                    # Note that Riot always returns summoner name keys as all lower case.
+                    fetchedId = if ld.isString(id) then id.toLowerCase() else id
+                    answer[id] = fetchedObjects[fetchedId] ? null
 
-                if answer[id]? and cacheResultsFn?
-                    cacheResultFn this, region, answer[id], options
-                else
-                    @cache.set cacheParams, (answer[id] ? "none")
+                    if answer[id]? and cacheResultsFn?
+                        cacheResultFn this, region, answer[id], options
+                    else
+                        @cache.set cacheParams, (answer[id] ? "none")
+            ), _
 
         return answer
 
