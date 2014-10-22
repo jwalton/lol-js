@@ -59,10 +59,13 @@ module.exports = class Client extends EventEmitter
 
         @_rateLimiter = new RateLimiter options.rateLimit ? [{time: 10, limit: 10}, {time: 600, limit: 500}]
         @_queuedRequests = []
+        @_processingRequests = false
+
         @_cacheHits = 0
         @_cacheMisses = 0
         @_cacheErrors = 0
         @_hitRateLimit = 0
+        @_queueHighWaterMark = 0
         @_request = require 'request'
 
     # Destroy this client.
@@ -74,20 +77,13 @@ module.exports = class Client extends EventEmitter
         hits: @_cacheHits,
         misses: @_cacheMisses
         errors: @_cacheErrors
-        rateLimitErros: @_hitRateLimit
+        rateLimitErrors: @_hitRateLimit
+        queueLength: @_queuedRequests.length
+        queueHighWaterMark: @_queueHighWaterMark
     }
 
-    # Make a request to the Riot API.
-    #
-    # Parameters:
-    # * `params.region` - The region of the summoner.
-    # * `params.url` - The URL used to fetch the data (without the query string.)
-    # * `params.queryParams` - The query parameters to use to fetch the data (without the API key.)
-    # * `params.rateLimit` - If true (the default) then we will rate limit the request.
-    #
-    _riotRequest: (params, _) ->
-        if params.rateLimit ? true then @_rateLimiter.wait _
-
+    # This sends a request to the Riot API, without queueing it.
+    _doRequest: (params, _) ->
         queryString = querystring.stringify params.queryParams
         queryString = if queryString then "&#{queryString}" else ""
         url = "#{params.url}?api_key=#{@apiKey}#{queryString}"
@@ -96,7 +92,8 @@ module.exports = class Client extends EventEmitter
         if response.statusCode is 429
             # Hit rate limit.  Try again later.
             @_hitRateLimit++
-            answer = @_riotRequest params, _
+            @_rateLimiter.wait _
+            answer = @_doRequest params, _
         else if response.statusCode is 404
             answer = null
         else if response.statusCode isnt 200
@@ -105,6 +102,50 @@ module.exports = class Client extends EventEmitter
             answer = JSON.parse body
 
         return answer
+
+    # Starts the "background worker" which drains requests from the queue and sends them.
+    _startRequestWorker: ->
+        # If there's already a worker running, just return immediately.
+        return if @_processingRequests
+
+        @_processingRequests = true
+
+        doWork = =>
+            if @_queuedRequests.length is 0
+                @_processingRequests = false
+            else
+                @_rateLimiter.wait =>
+                    # Go process another request immediately - we don't want to wait for this
+                    # request to finish, we just want to wait for the rate limiter.
+                    setImmediate doWork
+
+                    {params, done} = @_queuedRequests.shift()
+                    @_doRequest params, done
+
+        doWork()
+
+    # Make a request to the Riot API.
+    #
+    # This method will add the request to the request queue; requests in the queue will be
+    # processed in the order they were submitted.
+    #
+    # Parameters:
+    # * `params.region` - The region of the summoner.
+    # * `params.url` - The URL used to fetch the data (without the query string.)
+    # * `params.queryParams` - The query parameters to use to fetch the data (without the API key.)
+    # * `params.rateLimit` - If true (the default) then we will rate limit the request.
+    #
+    _riotRequest: (params, done) ->
+        if !(params.rateLimit ? true)
+            # Not rate limited - do this request immediately instead of adding it to the queue.
+            @_doRequest params, done
+        else
+            # Queue the request
+            # TODO: If I make the same request multiple times, I could find the existing request and
+            # just add another callback to it.
+            @_queuedRequests.push {params, done}
+            @_queueHighWaterMark = Math.max @_queueHighWaterMark, @_queuedRequests.length
+            @_startRequestWorker()
 
     _validateCacheParams: (cacheParams) ->
         # cacheParams can be passed to third party cache providers, so it's important we
