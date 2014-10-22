@@ -229,7 +229,7 @@ module.exports = class Client extends EventEmitter
                     queryParams: queryParams
                 }, _
                 fetchedObjects ?= {}
-                for {id, cacheParams} in missingObjects
+                for {id, cacheParams} in group
                     # Note that Riot always returns summoner name keys as all lower case.
                     fetchedId = if ld.isString(id) then id.toLowerCase() else id
                     answer[id] = fetchedObjects[fetchedId] ? null

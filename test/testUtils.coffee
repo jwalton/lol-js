@@ -56,8 +56,12 @@ exports.expectRequests = (client, requests) ->
                 expect(queryParams[expectedParamName]).to.equal("#{expectedParamValue}",
                     "URL query parameter #{expectedParamName} has incorrect value")
 
-            filename = path.resolve __dirname, 'sampleResults', expectedRequest.sampleFile
-            cb null, {statusCode: 200}, fs.readFileSync(filename, {encoding: 'utf8'})
+            if expectedRequest.sampleFile?
+                filename = path.resolve __dirname, 'sampleResults', expectedRequest.sampleFile
+                result = fs.readFileSync(filename, {encoding: 'utf8'})
+            else
+                result = expectedRequest.body
+            cb null, {statusCode: 200}, result
         catch err
             return cb err
 
