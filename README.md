@@ -11,6 +11,7 @@ Features
   * lol-static-data-v1.2 (partial)
   * match-v2.2
   * summoner-v1.4
+  * team-v2.4
   * it's fairly easy to add other APIs - if you need something please raise an issue and I'll
     add it in for you, or send a Pull Request.
 * Parameters are passed as object maps, making for easy to read code.

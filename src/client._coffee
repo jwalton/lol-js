@@ -100,6 +100,7 @@ module.exports = class Client extends EventEmitter
         else if response.statusCode isnt 200
             throw new Error("Error calling #{params.caller}: #{response.statusCode}")
         else
+            # console.log "Requested #{url}"
             answer = JSON.parse body
 
         return answer
@@ -183,22 +184,24 @@ module.exports = class Client extends EventEmitter
     # which automates this.
     #
     # Parameters:
-    # * `caller` is the name of the public client function calling _riotMultiGet.
-    # * `baseUrl` the base URL to fetch from.
-    # * `ids` the list of IDs to pass.
-    # * `getCacheParamsFn(client, region, id, options)` - Called to get cache params for an id.
-    # * `cacheResultFn(client, region, result, options)` - Called to write a single result to the
-    #   cache.
-    #   If null, then result of `getCacheParamsFn()` will be used.
-    # * `queryParams` is query params to pass to the Riot API.
-    # * `maxObjs` is the maximum number of ids to pull in a single request.
+    # * `params.caller` is the name of the public client function calling _riotMultiGet.
+    # * `params.baseUrl` the base URL to fetch from.
+    # * `params.ids` the list of IDs to pass.  These are appended to the baseUrl as a list of comma
+    #   seperated strings.
+    # * `params.urlSuffix` is appended to the baseUrl after the comma separated list of IDs.
+    # * `params.getCacheParamsFn(client, region, id, options)` - Called to get cache params for an
+    #   id.
+    # * `params.cacheResultFn(client, region, result, options)` - Called to write a single result
+    #   to the cache.  If null, then result of `getCacheParamsFn()` will be used.
+    # * `params.queryParams` is queryParams to pass to _riotRequest().
+    # * `params.maxObjs` is the maximum number of ids to pull in a single request.
     # * `options.region` is used to determine the region.  `options` is also passed on to the
     #   `getCacheParamsFn` and `cacheResultFn`.
     #
     # Returns a map where keys are the `ids` passed in, and values are either object returned
     # from Riot or `null` if the objects can't be found.
-    _riotMultiGet: (caller, baseUrl, ids, urlSuffix, getCacheParamsFn, cacheResultFn, queryParams,
-            maxObjs, options, _) ->
+    _riotMultiGet: (params, options, _) ->
+        {caller, baseUrl, ids, urlSuffix, getCacheParamsFn, cacheResultFn, queryParams, maxObjs} = params
         region = options?.region ? @defaultRegion
         if !ld.isArray ids then ids = [ids]
 
@@ -219,20 +222,22 @@ module.exports = class Client extends EventEmitter
 
         # If we couldn't find some objects, go fetch them from Riot
         if missingObjects.length > 0
+            # Divide up the objects we need to get into groups of `maxObjs` each.
             groups = for i in [0...Math.ceil(missingObjects.length/maxObjs)]
                 missingObjects.slice(i*maxObjs, i*maxObjs + maxObjs)
+
             async.each groups, ( (group, _) =>
                 fetchedObjects = @_riotRequest {
                     caller: caller,
                     region: region,
-                    url: "#{baseUrl}/#{ld.pluck(group, "id").join ","}#{urlSuffix}"
+                    url: "#{baseUrl}/#{ld.pluck(group, "id").join ","}#{urlSuffix ? ''}"
                     queryParams: queryParams
                 }, _
                 fetchedObjects ?= {}
                 for {id, cacheParams} in group
                     # Note that Riot always returns summoner name keys as all lower case.
                     fetchedId = if ld.isString(id) then id.toLowerCase() else id
-                    answer[id] = fetchedObjects[fetchedId] ? null
+                    answer[id] = fetchedObjects[id] ? fetchedObjects[fetchedId] ? null
 
                     if answer[id]? and cacheResultsFn?
                         cacheResultFn this, region, answer[id], options

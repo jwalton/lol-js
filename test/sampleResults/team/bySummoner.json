@@ -1,0 +1,342 @@
+{"24125166": [{
+   "secondLastJoinDate": 1356238693000,
+   "lastJoinDate": 1371260031000,
+   "fullId": "TEAM-9b6cd830-1ff0-11e2-a4e5-782bcb4d1861",
+   "matchHistory": [
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 1,
+         "assists": 42,
+         "opposingTeamName": "Samsung Blue Swag",
+         "invalid": false,
+         "deaths": 39,
+         "gameId": 1590921313,
+         "kills": 22,
+         "win": false,
+         "date": 1413691442417,
+         "opposingTeamKills": 39
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 1,
+         "assists": 42,
+         "opposingTeamName": "HomieHoppers",
+         "invalid": false,
+         "deaths": 7,
+         "gameId": 1587552638,
+         "kills": 26,
+         "win": true,
+         "date": 1413514757206,
+         "opposingTeamKills": 7
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 1,
+         "assists": 19,
+         "opposingTeamName": "Masterworks",
+         "invalid": false,
+         "deaths": 54,
+         "gameId": 1583770630,
+         "kills": 15,
+         "win": false,
+         "date": 1413337419962,
+         "opposingTeamKills": 54
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 4,
+         "opposingTeamName": "TriplePurpleThunderballs",
+         "invalid": false,
+         "deaths": 25,
+         "gameId": 1576023765,
+         "kills": 5,
+         "win": false,
+         "date": 1412910789900,
+         "opposingTeamKills": 25
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 1,
+         "assists": 13,
+         "opposingTeamName": "KillTeemoDead",
+         "invalid": false,
+         "deaths": 34,
+         "gameId": 1562921249,
+         "kills": 10,
+         "win": false,
+         "date": 1412044836640,
+         "opposingTeamKills": 34
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 1,
+         "assists": 74,
+         "opposingTeamName": "Oak Street Gang",
+         "invalid": false,
+         "deaths": 18,
+         "gameId": 1562809067,
+         "kills": 33,
+         "win": true,
+         "date": 1412042271868,
+         "opposingTeamKills": 18
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 1,
+         "assists": 24,
+         "opposingTeamName": "Greymon Pirates",
+         "invalid": false,
+         "deaths": 40,
+         "gameId": 1516857569,
+         "kills": 11,
+         "win": false,
+         "date": 1409539548916,
+         "opposingTeamKills": 40
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 6,
+         "opposingTeamName": "Fishing For Wurf",
+         "invalid": false,
+         "deaths": 23,
+         "gameId": 1479705010,
+         "kills": 4,
+         "win": false,
+         "date": 1407119150568,
+         "opposingTeamKills": 22
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 4,
+         "opposingTeamName": "Mark and the Gays",
+         "invalid": false,
+         "deaths": 23,
+         "gameId": 1479638301,
+         "kills": 5,
+         "win": false,
+         "date": 1407117437532,
+         "opposingTeamKills": 23
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 13,
+         "opposingTeamName": "PollyGone",
+         "invalid": false,
+         "deaths": 19,
+         "gameId": 1478686271,
+         "kills": 7,
+         "win": false,
+         "date": 1407040868096,
+         "opposingTeamKills": 19
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 15,
+         "opposingTeamName": "Team UndertheInfluence",
+         "invalid": false,
+         "deaths": 13,
+         "gameId": 1476159500,
+         "kills": 9,
+         "win": true,
+         "date": 1406862652490,
+         "opposingTeamKills": 13
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 1,
+         "assists": 52,
+         "opposingTeamName": "The East West Wolf Pack",
+         "invalid": false,
+         "deaths": 28,
+         "gameId": 1471105500,
+         "kills": 33,
+         "win": true,
+         "date": 1406517946071,
+         "opposingTeamKills": 28
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 23,
+         "opposingTeamName": "YOUCOMEINTOMYHOUSE",
+         "invalid": false,
+         "deaths": 28,
+         "gameId": 1471054448,
+         "kills": 21,
+         "win": false,
+         "date": 1406514831132,
+         "opposingTeamKills": 28
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 9,
+         "opposingTeamName": "les pierres à feux",
+         "invalid": false,
+         "deaths": 20,
+         "gameId": 1471016822,
+         "kills": 10,
+         "win": false,
+         "date": 1406511965722,
+         "opposingTeamKills": 20
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 13,
+         "opposingTeamName": "Money Power and Glory",
+         "invalid": false,
+         "deaths": 3,
+         "gameId": 1463348098,
+         "kills": 8,
+         "win": true,
+         "date": 1405997870802,
+         "opposingTeamKills": 3
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 33,
+         "opposingTeamName": "RoofusMYDOg",
+         "invalid": false,
+         "deaths": 14,
+         "gameId": 1449620437,
+         "kills": 22,
+         "win": true,
+         "date": 1405047789833,
+         "opposingTeamKills": 14
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 2,
+         "opposingTeamName": "TM Smash",
+         "invalid": false,
+         "deaths": 18,
+         "gameId": 1445078642,
+         "kills": 1,
+         "win": false,
+         "date": 1404704553399,
+         "opposingTeamKills": 18
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 4,
+         "opposingTeamName": "BS Train",
+         "invalid": false,
+         "deaths": 15,
+         "gameId": 1432541943,
+         "kills": 2,
+         "win": false,
+         "date": 1403751921734,
+         "opposingTeamKills": 15
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 14,
+         "opposingTeamName": "CACU Curbstompers",
+         "invalid": false,
+         "deaths": 2,
+         "gameId": 1432521022,
+         "kills": 10,
+         "win": true,
+         "date": 1403749826852,
+         "opposingTeamKills": 2
+      },
+      {
+         "gameMode": "CLASSIC",
+         "mapId": 10,
+         "assists": 40,
+         "opposingTeamName": "BigNigs",
+         "invalid": false,
+         "deaths": 14,
+         "gameId": 1430094514,
+         "kills": 26,
+         "win": true,
+         "date": 1403578009933,
+         "opposingTeamKills": 14
+      }
+   ],
+   "lastJoinedRankedTeamQueueDate": 1413688294000,
+   "status": "RANKED",
+   "teamStatDetails": [
+      {
+         "losses": 4,
+         "averageGamesPlayed": 0,
+         "wins": 3,
+         "teamStatType": "RANKED_TEAM_5x5"
+      },
+      {
+         "losses": 11,
+         "averageGamesPlayed": 0,
+         "wins": 11,
+         "teamStatType": "RANKED_TEAM_3x3"
+      }
+   ],
+   "tag": "Rodnts",
+   "name": "Martial Rodents",
+   "thirdLastJoinDate": 1355367846000,
+   "roster": {
+      "ownerId": 23876500,
+      "memberList": [
+         {
+            "joinDate": 1351312903000,
+            "inviteDate": 1351312903000,
+            "status": "MEMBER",
+            "playerId": 23876500
+         },
+         {
+            "joinDate": 1351312929000,
+            "inviteDate": 1351312921000,
+            "status": "MEMBER",
+            "playerId": 23931413
+         },
+         {
+            "joinDate": 1351312933000,
+            "inviteDate": 1351312923000,
+            "status": "MEMBER",
+            "playerId": 24052480
+         },
+         {
+            "joinDate": 1351387760000,
+            "inviteDate": 1351312963000,
+            "status": "MEMBER",
+            "playerId": 24125166
+         },
+         {
+            "joinDate": 1351357521000,
+            "inviteDate": 1351312978000,
+            "status": "MEMBER",
+            "playerId": 23817934
+         },
+         {
+            "joinDate": 1355367846000,
+            "inviteDate": 1355286058000,
+            "status": "MEMBER",
+            "playerId": 25804545
+         },
+         {
+            "joinDate": 1356238693000,
+            "inviteDate": 1356139917000,
+            "status": "MEMBER",
+            "playerId": 23756824
+         },
+         {
+            "joinDate": 1371260031000,
+            "inviteDate": 1371260023000,
+            "status": "MEMBER",
+            "playerId": 19527439
+         }
+      ]
+   },
+   "lastGameDate": 1413691442000,
+   "modifyDate": 1413691442000,
+   "createDate": 1351312903000
+}]}

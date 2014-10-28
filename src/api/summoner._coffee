@@ -25,12 +25,15 @@ exports.methods = {
     # is not found, it will be returned as `null` in the results.
     getSummonersByName: optCb (summonerNames, options, _) ->
         region = options.region ? @defaultRegion
-        @_riotMultiGet("getSummonersByName",
-            "#{@_makeUrl region, api}/by-name", summonerNames, "",
-            summonerByNameCacheParams,
-            cacheSummoner,
-            null, MAX_SUMMONER_NAMES_PER_REQUEST, options, _
-        )
+        @_riotMultiGet(
+            {
+                caller: "getSummonersByName",
+                baseUrl: "#{@_makeUrl region, api}/by-name",
+                ids: summonerNames,
+                getCacheParamsFn: summonerByNameCacheParams,
+                cacheResultFn: cacheSummoner,
+                maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
+            }, options, _)
 
     # Get one or more summoners by ID.
     #
@@ -44,11 +47,14 @@ exports.methods = {
     # is not found, it will be returned as `null` in the results.
     getSummonersById: optCb (summonerIds, options, _) ->
         region = options.region ? @defaultRegion
-        @_riotMultiGet("getSummonersById",
-            "#{@_makeUrl region, api}", summonerIds, "",
-            summonerByIdCacheParams('summoner'),
-            null, null, MAX_SUMMONER_IDS_PER_REQUEST, options, _
-        )
+        @_riotMultiGet(
+            {
+                caller: "getSummonersById",
+                baseUrl: @_makeUrl(region, api)
+                ids: summonerIds,
+                getCacheParamsFn: summonerByIdCacheParams('summoner'),
+                maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
+            }, options, _)
 
     # Get the names for one or more summonerIds.
     #
@@ -71,11 +77,15 @@ exports.methods = {
     # a given summoner ID is not found, the value will be `null` in the results.
     getSummonerMasteries: optCb (summonerIds, options, _) ->
         region = options.region ? @defaultRegion
-        @_riotMultiGet("getSummonerMasteries",
-            "#{@_makeUrl region, api}", summonerIds, "/masteries",
-            summonerByIdCacheParams('masteries'),
-            null, null, MAX_SUMMONER_IDS_PER_REQUEST, options, _
-        )
+        @_riotMultiGet(
+            {
+                caller: "getSummonerMasteries",
+                baseUrl: @_makeUrl(region, api)
+                ids: summonerIds,
+                urlSuffix: "/masteries",
+                getCacheParamsFn: summonerByIdCacheParams('masteries'),
+                maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
+            }, options, _)
 
     # Get one or more summoner's runes.
     #
@@ -88,11 +98,15 @@ exports.methods = {
     # a given summoner ID is not found, the value will be `null` in the results.
     getSummonerRunes: optCb (summonerIds, options, _) ->
         region = options.region ? @defaultRegion
-        @_riotMultiGet("getSummonerRunes",
-            "#{@_makeUrl region, api}", summonerIds, "/runes",
-            summonerByIdCacheParams('runes'),
-            null, null, MAX_SUMMONER_IDS_PER_REQUEST, options, _
-        )
+        @_riotMultiGet(
+            {
+                caller: "getSummonerRunes",
+                baseUrl: @_makeUrl(region, api)
+                ids: summonerIds,
+                urlSuffix: "/runes",
+                getCacheParamsFn: summonerByIdCacheParams('runes'),
+                maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
+            }, options, _)
 }
 
 
