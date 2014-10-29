@@ -155,7 +155,8 @@ module.exports = class Client extends EventEmitter
         # any cache parameters.
         for key in ['key', 'api', 'objectType', 'region', 'params']
             if !(key of cacheParams) then throw new Error "Missing #{key} in cacheParams."
-        cacheParams.ttl ?= @cacheTTL.short
+        if not 'ttl' of cacheParams
+            cacheParams.ttl ?= @cacheTTL.short
 
     # Make a request to the Riot API, but automatically check the cache for results first and
     # store results in the cache.
