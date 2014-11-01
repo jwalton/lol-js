@@ -12,6 +12,7 @@ RateLimiter = require './rateLimiter'
 #   happen, but this is here so we can monitor and make sure it doesn't.  :)
 #
 module.exports = class Client extends EventEmitter
+    constants: require './constants'
 
     # Options:
     # * `apiKey` - the API key [assigned to you by Riot](https://developer.riotgames.com/).
@@ -56,6 +57,7 @@ module.exports = class Client extends EventEmitter
             @cache = {
                 get: (params, done) -> done null, null
                 set: ->
+                destroy: ->
             }
 
         @_rateLimiter = new RateLimiter options.rateLimit ? [{time: 10, limit: 10}, {time: 600, limit: 500}]
