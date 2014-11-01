@@ -34,7 +34,8 @@
     "limiter": "^1.0.5",
     "lodash": "^2.4.1",
     "redis": "^0.12.1",
-    "request": "^2.45.0"
+    "request": "^2.45.0",
+    "streamline": "^0.10.16"
   },
   "devDependencies": {
     "chai": "^1.9.1",
@@ -43,8 +44,7 @@
     "gulp-coffee": "^2.2.0",
     "gulp-streamlinejs": "^0.0.3",
     "gulp-util": "^3.0.1",
-    "mocha": "^1.21.4",
-    "streamline": "^0.10.16"
+    "mocha": "^1.21.4"
   },
   "engines": {
     "node": ">=0.10.1"
