@@ -61,4 +61,12 @@ exports.methods = {
                 maxObjs: 10
             }, options, _)
 
+    # Get record for a single team.
+    #
+    # This is a convenience wrapper around getTeams which takes a single `teamId`, and returns the
+    # team associated with it.
+    #
+    getTeam: optCb (teamId, options, _) ->
+        answer = @getTeams teamId, options, _
+        return answer?[teamId]
 }
