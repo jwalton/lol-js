@@ -35,7 +35,7 @@ var lolClient = lol.client({
     defaultRegion: 'na',
     cache: lol.redisCache({host: '127.0.0.1', port: 6379})
 };
-lolClient.getChampionById(53, {champData: 'all'}, function(err, data) {
+lolClient.getChampionById(53, {champData: ['all']}, function(err, data) {
     console.log("Found ", data.name);
     lolClient.destroy();
 });
