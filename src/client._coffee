@@ -99,8 +99,14 @@ module.exports = class Client extends EventEmitter
             answer = @_doRequest params, _
         else if response.statusCode is 404
             answer = null
+        else if response.statusCode is 503
+            err = new Error("Riot API is temporarily unavailable")
+            err.statusCode = response.statusCode
+            throw err
         else if response.statusCode isnt 200
-            throw new Error("Error calling #{params.caller}: #{response.statusCode}")
+            err = new Error("Error calling #{params.caller}: #{response.statusCode}")
+            err.statusCode = response.statusCode
+            throw err
         else
             # console.log "Requested #{url}"
             answer = JSON.parse body
@@ -126,7 +132,7 @@ module.exports = class Client extends EventEmitter
                     {params, done} = @_queuedRequests.shift()
                     @_doRequest params, done
 
-        doWork()
+        setImmediate doWork()
 
     # Make a request to the Riot API.
     #
