@@ -5,7 +5,7 @@ lol       = require '../../src/lol'
 describe 'match API', ->
     describe 'populateMatch()', ->
         it 'should populate players in a match', (_) ->
-            client = lol.client { apiKey: 'TESTKEY', cache: lol.inMemoryCache() }
+            client = lol.client { apiKey: 'TESTKEY', cache: lol.lruCache(50) }
             testUtils.expectRequests client, [
                 {
                     url: "https://na.api.pvp.net/api/lol/na/v2.2/match/1514152049?includeTimeline=false"
@@ -26,7 +26,7 @@ describe 'match API', ->
             expect(match.participantIdentities[0].player.summonerName).to.equal "SummonerA"
 
         it 'should populate players in a match and cache them', (_) ->
-            client = lol.client { apiKey: 'TESTKEY', cache: lol.inMemoryCache() }
+            client = lol.client { apiKey: 'TESTKEY', cache: lol.lruCache(50) }
             testUtils.expectRequests client, [
                 {
                     url: "https://na.api.pvp.net/api/lol/na/v2.2/match/1514152049?includeTimeline=false"
@@ -50,7 +50,7 @@ describe 'match API', ->
             expect(match.participantIdentities[0].player.summonerName).to.equal "SummonerA"
 
         it 'should populate players correctly when the default region differs', (_) ->
-            client = lol.client { apiKey: 'TESTKEY', cache: lol.inMemoryCache(), defaultRegion: 'ru' }
+            client = lol.client { apiKey: 'TESTKEY', cache: lol.lruCache(50), defaultRegion: 'ru' }
             testUtils.expectRequests client, [
                 {
                     url: "https://na.api.pvp.net/api/lol/na/v2.2/match/1514152049?includeTimeline=false"
@@ -81,7 +81,7 @@ describe 'match API', ->
             expect(loadedPlayers[1].summoner?.name).to.equal "SummonerB"
 
         it 'should work when IDs are specified', (_) ->
-            client = lol.client { apiKey: 'TESTKEY', cache: lol.inMemoryCache() }
+            client = lol.client { apiKey: 'TESTKEY', cache: lol.lruCache(50) }
             testUtils.expectRequests client, [
                 {
                     url: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/1,2",
@@ -98,7 +98,7 @@ describe 'match API', ->
             checkLoadedPlayers loadedPlayers
 
         it 'should work when names are specified', (_) ->
-            client = lol.client {apiKey: 'TESTKEY', cache: lol.inMemoryCache()}
+            client = lol.client {apiKey: 'TESTKEY', cache: lol.lruCache(50)}
             testUtils.expectRequests client, [
                 {
                     url: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/SummonerA,summonerb"
@@ -119,7 +119,7 @@ describe 'match API', ->
             checkLoadedPlayers loadedPlayers
 
     describe 'getTeamIdForSummonerId', ->
-        client = lol.client {apiKey: 'TESTKEY', cache: lol.inMemoryCache()}
+        client = lol.client {apiKey: 'TESTKEY', cache: lol.lruCache(50)}
         match = require '../sampleResults/match/ranked.json'
 
         it 'should find the correct team for a summoner', ->

@@ -7,7 +7,7 @@ describe 'summoner API', ->
     it 'should fetch summoners by name', (_) ->
         client = lol.client {
             apiKey: 'TESTKEY'
-            cache: lol.inMemoryCache()
+            cache: lol.lruCache(50)
         }
         testUtils.expectRequest(client,
             "https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/SummonerA,SummonerB",

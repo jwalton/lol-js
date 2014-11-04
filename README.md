@@ -74,7 +74,9 @@ the data rather than worrying about rate limits.
 The easiest way to cache objects is to use a built-in cache type.  The following built in cache
 types exist:
 
-* `lol.inMemoryCache()` - Caches all objects in memory.
+* `lol.lruCache(options)` - Caches all objects in memory.  Based on [isaacs](https://github.com/isaacs)'s
+  [lru-cache](https://github.com/isaacs/node-lru-cache), and can take any options that the
+  `LRU` constructor can take.
 * `lol.redisCache({host, port, keyPrefix})` - Caches objects in Redis.  `host` and `port` are
   the connection details for your redis server and default to `'127.0.0.1'` and `6379`,
   respectively.  `keyPrefix` is a prefix to prepend to all keys stored in Redis and defaults

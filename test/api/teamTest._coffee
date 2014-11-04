@@ -7,7 +7,7 @@ describe 'team API', ->
     it 'should fetch summoners by name', (_) ->
         client = lol.client {
             apiKey: 'TESTKEY'
-            cache: lol.inMemoryCache()
+            cache: lol.lruCache(50)
         }
         testUtils.expectRequest(client,
             "https://na.api.pvp.net/api/lol/na/v2.4/team/by-summoner/24125166",
@@ -22,7 +22,7 @@ describe 'team API', ->
         teamId = "TEAM-9b6cd830-1ff0-11e2-a4e5-782bcb4d1861"
         client = lol.client {
             apiKey: 'TESTKEY'
-            cache: lol.inMemoryCache()
+            cache: lol.lruCache(50)
         }
         testUtils.expectRequest(client,
             "https://na.api.pvp.net/api/lol/na/v2.4/team/TEAM-9b6cd830-1ff0-11e2-a4e5-782bcb4d1861",

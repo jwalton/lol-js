@@ -7,3 +7,6 @@ exports.inMemoryCache = ->
 exports.redisCache = ->
     RedisCache = require('./cache/redisCache')
     return new RedisCache()
+exports.lruCache = (options) ->
+    LRUCache = require './cache/lruCache'
+    return new LRUCache options
