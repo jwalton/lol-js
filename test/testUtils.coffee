@@ -7,7 +7,7 @@ querystring = require 'querystring'
 # Calling this will force the passed in `client` to respond to HTTP requests with mock data instead
 # of actually calling out to the Riot API.
 #
-# `requests` should be an array of `{url, sampleFile}` objects.
+# `requests` should be an array of `{url, sampleFile}` objects or `{url, body}` objects.
 # `url` is a URL without a query string
 # (e.g. "https://na.api.pvp.net/api/lol/static-data/na/v1.2/champion")  and `sampleFile` is the
 # name of a file in the sampleResults folder to return as the request body

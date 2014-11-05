@@ -1,7 +1,6 @@
 assert  = require 'assert'
 ld      = require 'lodash'
-async   = require 'async'
-{optCb} = require '../utils'
+{promiseToCb} = require '../utils'
 matchApi = require './match'
 
 api = exports.api = {
@@ -24,7 +23,7 @@ exports.methods = {
     # Returns a `{games, summonerId}` object.  If `options.asMatches` is specified, returns a
     # `{games, matches, summonerId}` object.
     #
-    getRecentGamesForSummoner: optCb (summonerId, options, _) ->
+    getRecentGamesForSummonerAsync: (summonerId, options={}) ->
         # Since we're relying on other APIs, we assert here so that if those APIs change, we'll get
         # unit test failures if we don't update this method.
         assert.equal(matchApi.api.version, "v2.2", "match API version has changed.")
@@ -43,12 +42,13 @@ exports.methods = {
             params: {summonerId}
         }
 
-        games = @_riotRequestWithCache requestParams, cacheParams, {}, _
-
-        if options.asMatches
-            # Fetch matches in parallel
-            games.matches = async.map games.games,
-                ((game, _) =>
+        @_riotRequestWithCache(requestParams, cacheParams, {})
+        .then (games) =>
+            if !options.asMatches
+                return games
+            else
+                # Fetch matches in parallel
+                return @Promise.all games.games.map (game) =>
                     matchOptions = if options.asMatches is true
                         {region}
                     else
@@ -59,9 +59,10 @@ exports.methods = {
                         teamId: game.teamId,
                         summonerId
                     }
-                    return @getMatch game.gameId, matchOptions, _
-                ), _
+                    return @getMatchAsync game.gameId, matchOptions
+                .then (matches) ->
+                    games.matches = matches
+                    games
 
-        return games
 
 }

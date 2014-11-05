@@ -14,10 +14,10 @@ Features
   * team-v2.4
   * it's fairly easy to add other APIs - if you need something please raise an issue and I'll
     add it in for you, or send a Pull Request.
-* Parameters are passed as object maps, making for easy to read code.
+* Native promise support
 * Built in support for rate limiting.
 * Built in support for flexible caching with the caching engine of your choice.  Built in support
-  is availble for Redis and an in-memory cache, however it is easy to write support for other
+  is available for Redis and an in-memory cache, however it is easy to write support for other
   databases if you wish.
 
 Installation
@@ -28,6 +28,8 @@ Installation
 Example Usage
 =============
 
+With callbacks:
+
 ```
 var lol = require('lol-js');
 var lolClient = lol.client({
@@ -36,6 +38,22 @@ var lolClient = lol.client({
     cache: lol.redisCache({host: '127.0.0.1', port: 6379})
 };
 lolClient.getChampionById(53, {champData: ['all']}, function(err, data) {
+    console.log("Found ", data.name);
+    lolClient.destroy();
+});
+```
+
+With promises:
+
+```
+var lol = require('lol-js');
+var lolClient = lol.client({
+    apiKey: 'blahblahblah',
+    defaultRegion: 'na',
+    cache: lol.redisCache({host: '127.0.0.1', port: 6379})
+};
+lolClient.getChampionByIdAsync(53, {champData: ['all']})
+.then(function (data) {
     console.log("Found ", data.name);
     lolClient.destroy();
 });
@@ -63,7 +81,8 @@ Functions
 
 You can browse the well-documented code in the [`src/api`](https://github.com/jwalton/lol-js/tree/master/src/api)
 folder for a complete description of all the functions you can call.  Each file in `src/api` is a
-mixin object which is added to the client object's prototype.
+mixin object which is added to the client object's prototype.  Note that the source files only
+contain the promise version of the code - the callback versions are generated automatically.
 
 Caching
 =======

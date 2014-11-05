@@ -1,5 +1,5 @@
 ld = require 'lodash'
-{optCb} = require '../utils'
+{promiseToCb} = require '../utils'
 
 api = exports.api = {
     fullname: "summoner-v1.4",
@@ -23,7 +23,7 @@ exports.methods = {
     # Returns a hash where keys are summoner names and values are
     # `{id, name, profileIconId, revsionData, summonerLevel}` objects.  If a given summoner name
     # is not found, it will be returned as `null` in the results.
-    getSummonersByName: optCb (summonerNames, options, _) ->
+    getSummonersByNameAsync: (summonerNames, options={}) ->
         region = options.region ? @defaultRegion
         @_riotMultiGet(
             {
@@ -33,7 +33,7 @@ exports.methods = {
                 getCacheParamsFn: summonerByNameCacheParams,
                 cacheResultFn: cacheSummoner,
                 maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
-            }, options, _)
+            }, options)
 
     # Get one or more summoners by ID.
     #
@@ -45,7 +45,7 @@ exports.methods = {
     # Returns a hash where keys are summoner IDs and values are
     # `{id, name, profileIconId, revsionData, summonerLevel}` objects.  If a given summoner ID
     # is not found, it will be returned as `null` in the results.
-    getSummonersById: optCb (summonerIds, options, _) ->
+    getSummonersByIdAsync: (summonerIds, options={}) ->
         region = options.region ? @defaultRegion
         @_riotMultiGet(
             {
@@ -54,7 +54,7 @@ exports.methods = {
                 ids: summonerIds,
                 getCacheParamsFn: summonerByIdCacheParams('summoner'),
                 maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
-            }, options, _)
+            }, options)
 
     # Get the names for one or more summonerIds.
     #
@@ -62,9 +62,10 @@ exports.methods = {
     # fetches full summoner records and then maps them.  This increases the likelyhood that we'll
     # find the appropriate records in the cache.
     #
-    getSummonerNames: optCb (summonerIds, options, _) ->
-        summoners = @getSummonersById summonerIds, options, _
-        return ld.mapValues summoners, (x) -> x?.name ? null
+    getSummonerNamesAsync: (summonerIds, options={}) ->
+        @getSummonersByIdAsync summonerIds, options
+        .then (summoners) ->
+            return ld.mapValues summoners, (x) -> x?.name ? null
 
     # Get one or more summoner's masteries.
     #
@@ -75,7 +76,7 @@ exports.methods = {
     #
     # Returns a hash where keys are summoner IDs and values are `{pages, summonerId}` objects.  If
     # a given summoner ID is not found, the value will be `null` in the results.
-    getSummonerMasteries: optCb (summonerIds, options, _) ->
+    getSummonerMasteriesAsync: (summonerIds, options={}) ->
         region = options.region ? @defaultRegion
         @_riotMultiGet(
             {
@@ -85,7 +86,7 @@ exports.methods = {
                 urlSuffix: "/masteries",
                 getCacheParamsFn: summonerByIdCacheParams('masteries'),
                 maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
-            }, options, _)
+            }, options)
 
     # Get one or more summoner's runes.
     #
@@ -96,7 +97,7 @@ exports.methods = {
     #
     # Returns a hash where keys are summoner IDs and values are `{pages, summonerId}` objects.  If
     # a given summoner ID is not found, the value will be `null` in the results.
-    getSummonerRunes: optCb (summonerIds, options, _) ->
+    getSummonerRunesAsync: (summonerIds, options={}) ->
         region = options.region ? @defaultRegion
         @_riotMultiGet(
             {
@@ -106,7 +107,7 @@ exports.methods = {
                 urlSuffix: "/runes",
                 getCacheParamsFn: summonerByIdCacheParams('runes'),
                 maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
-            }, options, _)
+            }, options)
 }
 
 

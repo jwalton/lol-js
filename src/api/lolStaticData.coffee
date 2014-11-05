@@ -1,5 +1,5 @@
 ld = require 'lodash'
-{optCb} = require '../utils'
+{promiseToCb} = require '../utils'
 
 api = exports.api = {
     fullname: "lol-static-data-v1.2",
@@ -27,7 +27,7 @@ exports.methods = {
     #   'altimages', 'blurb', 'enemytips', 'image', 'info', 'lore', 'partype', 'passive',
     #   'recommended', 'skins', 'spells', 'stats', 'tags'.
     #
-    getChampions: optCb (options, _) ->
+    getChampionsAsync: (options={}) ->
         options = ld.defaults {}, options, {
             region: @defaultRegion,
             dataById: false
@@ -46,7 +46,7 @@ exports.methods = {
                 "#{if options.dataById then 't' else 'f'}-#{(options.champData ? []).join ','}"
             api, region, objectType: 'champions', params: requestParams.queryParams
         }
-        @_riotRequestWithCache requestParams, cacheParams, {}, _
+        @_riotRequestWithCache requestParams, cacheParams, {}
 
     # Retrieve a champion using its ID.
     #
@@ -54,10 +54,10 @@ exports.methods = {
     # * `id` - the ID of the champion to retrieve.
     # * `options` are the same as for `getChampions()`, except that `dataById` cannot be specified.
     #
-    getChampionById: optCb (id, options, _) ->
+    getChampionByIdAsync: (id, options={}) ->
         options = ld.extend {}, options, {dataById: true}
-        champions = @getChampions(options, _)
-        return champions.data[id]
+        @getChampionsAsync(options)
+        .then (champions) -> champions.data[id]
 
     # Retrieve a champion using its key.
     #
@@ -65,26 +65,26 @@ exports.methods = {
     # * `id` - the ID of the champion to retrieve.
     # * `options` are the same as for `getChampions()`, except that `dataById` cannot be specified.
     #
-    getChampionByKey: optCb (key, options, _) ->
+    getChampionByKeyAsync: (key, options={}) ->
         options = ld.extend {}, options, {dataById: false}
-        champions = @getChampions(options, _)
-        return champions.data[key]
+        @getChampionsAsync(options)
+        .then (champions) -> champions.data[key]
 
-    getChampionByName: optCb (name, options, _) ->
+    getChampionByNameAsync: (name, options={}) ->
         options = ld.extend {}, options, {dataById: false}
-        champions = @getChampions(options, _)
+        @getChampionsAsync(options)
+        .then (champions) ->
+            # First try the name as a key, because this is the fastest way to do this.
+            answer = champions.data[name]
 
-        # First try the name as a key, because this is the fastest way to do this.
-        answer = champions.data[name]
+            # If this doesn't work, try searching for a champion with the same name, ignoring
+            # punctuation and case.
+            if !answer?
+                championsByName = ld.indexBy champions.data, (c) ->
+                    c.name.toLowerCase().replace(/\W/g, '')
+                answer = championsByName[name.toLowerCase().replace(/\W/g, '')]
 
-        # If this doesn't work, try searching for a champion with the same name, ignoring
-        # punctuation and case.
-        if !answer?
-            championsByName = ld.indexBy champions.data, (c) ->
-                c.name.toLowerCase().replace(/\W/g, '')
-            answer = championsByName[name.toLowerCase().replace(/\W/g, '')]
-
-        return answer
+            return answer
 
     # Retrieve a list of items.
     #
@@ -102,7 +102,7 @@ exports.methods = {
     #    inStore, into, maps, requiredChampion, sanitizedDescription, specialRecipe, stacks, stats,
     #    tags, tree
     #
-    getItems: optCb (options, _) ->
+    getItemsAsync: (options={}) ->
         options = ld.defaults {}, options, {
             region: @defaultRegion,
             dataById: false
@@ -121,7 +121,7 @@ exports.methods = {
                 options.tags.join(",")
             api, region, objectType: 'items', params: requestParams.queryParams
         }
-        @_riotRequestWithCache requestParams, cacheParams, {}, _
+        @_riotRequestWithCache requestParams, cacheParams, {}
 
     # Retrieve an item using its ID.
     #
@@ -129,9 +129,10 @@ exports.methods = {
     # * `id` - the ID of the item to retrieve.
     # * `options` are the same as for `getItems()`.
     #
-    getItemById: optCb (id, options, _) ->
-        objects = @getItems(options, _)
-        return objects.data[id]
+    getItemByIdAsync: (id, options={}) ->
+        @getItemsAsync(options)
+        .then (objects) ->
+            return objects.data[id]
 
     # TODO: Lots more things to implement here.
 
@@ -139,7 +140,7 @@ exports.methods = {
     #
     # Parameters:
     # * `options.region` - Region from which to retrieve data.
-    getVersions: optCb (options, _) ->
+    getVersionsAsync: (options={}) ->
         region = options?.region ? @defaultRegion
 
         requestParams = {
@@ -152,9 +153,10 @@ exports.methods = {
             key: "#{api.fullname}-versions-#{region}"
             api, region, objectType: 'versions', params: {}
         }
-        @_riotRequestWithCache requestParams, cacheParams, {}, _
+        @_riotRequestWithCache requestParams, cacheParams, {}
 
     # Converts a team name ("red" or "blue") to a team ID (100, 200).
+    # Note this returns the actual value, and not a promise.
     teamNameToId: (teamName) ->
         if teamName.toLowerCase() is "blue" then 100 else 200
 }

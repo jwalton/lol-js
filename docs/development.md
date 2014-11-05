@@ -5,11 +5,7 @@ Language
 ========
 
 lol-js is written in [CoffeeScript](http://coffeescript.org/), using
-[streamline.js](https://github.com/Sage/streamlinejs) to simplify async calls.  If you are
-unfamiliar with streamline, a quick introduction would be; in any file that ends in `._coffee`,
-anywhere where you'd pass a callback, you can replace the callback with `_`, and now you can
-pretend the function is synchronous.  Streamline takes care of all the messy async details behind
-the scenes at compile time.
+the [es6-promise](https://github.com/jakearchibald/es6-promise) promise polyfill.
 
 Building lol-js
 ===============
@@ -39,7 +35,7 @@ api = exports.api = {
 }
 
 exports.methods = {
-    getRecentGamesForSummoner: optCb (summonerId, options, _) ->
+    getRecentGamesForSummonerAsync: (summonerId, options) ->
         ...
 }
 ```
@@ -55,22 +51,24 @@ The `api` object is also handy for using the `_makeUrl` helper function.
 `methods` is a hash of functions which will be mixed in to the `Client` class's prototype.  These
 methods can call into methods in the core `Client` class or even into methods defined in other APIs.
 
-Note here we are defining a function with the `optCb` helper.  `optCb` is passed a function where
-the last two arguments are `options` and the callback.  `optCb` makes it so this function can be
-calls as either `getRecentGamesForSummoner(summonerId, done)` or as
-`getRecentGamesForSummoner(summonerId, options, done)`.
+For any method name that end is `Async`, `Client` will automatically have a method added to it
+without the `Async` suffix that accepts a callback as the last parameter, so in the above example
+the client will end up with a method called `getRecentGamesForSummonerAsync(summonerId, options)`
+which returns a promise, and `getRecentGamesForSummoner(summonerId, options, done)`, which will
+call `done(err, result)` with a result.
 
 Writing API Modules
 ===================
 
 If you are adding a new API module to `src/api`, or updating an existing API, there are three
-core methods in the `Client` class which you can use to easily implement your API.
+core methods in the `Client` class which you can use to easily implement your API.  Note that all
+of the following return promises.
 
-* `Client._riotRequest(params, done)` makes requests to the Riot API and returns the raw results.
+* `Client._riotRequest(params)` makes requests to the Riot API and returns the raw results.
   `_riotRequest()` doesn't do any caching, but by default enforces rate limits (although you
   can disable rate limit checks by passing `params.rateLimit` as false - handy for APIs such as
   lol-static-data where queries do not count against your rate limit.)
-* `Client._riotRequestWithCache(params, cacheParams, options, done)` is similar to `_riotRequest()`,
+* `Client._riotRequestWithCache(params, cacheParams, options)` is similar to `_riotRequest()`,
   but automatically caches results.  `params` is identical to the `params` object passed to
   `_riotRequest()`.  `cacheParams` is the params object which will be passed to `cache.get()`
   and `cache.set()`.  See below for more details on `cacheParams`.

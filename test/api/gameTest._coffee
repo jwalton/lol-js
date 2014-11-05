@@ -33,7 +33,7 @@ describe 'game API', ->
                 url: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/1,2,48789267,23876500,43531069,25804545,51526625,49040039,24052480,24125166"
                 sampleFile: 'summoner/byId.json'
             }, {
-                url: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/23931413,26142186,48385754,23789144,25986871,23876500,25804545,48432170,24052480"
+                url: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/23931413,26142186,48385754,23789144,25986871,48432170"
                 sampleFile: 'summoner/byId.json'
             }
         ]
@@ -41,6 +41,7 @@ describe 'game API', ->
         games = client.getRecentGamesForSummoner 24125166, {region: "na", asMatches: true},  _
 
         expect(games.games.length).to.equal 2
+        expect(games.matches.length).to.equal 2
         expect(games.matches).to.exist
         expect(games.matches[0].participantIdentities[1].player.summonerName).to.equal "SummonerB"
         expect(games.matches[0].participantIdentities[5].player.summonerName).to.equal "SummonerA"

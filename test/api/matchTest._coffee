@@ -67,7 +67,7 @@ describe 'match API', ->
                 players: [{championId: 120, teamId: 100, summonerId: 1}]
             },_
 
-    describe '_loadPlayers()', ->
+    describe '_loadPlayersAsync()', ->
         checkLoadedPlayers = (loadedPlayers) ->
             expect(loadedPlayers.length).to.equal 2
             expect(loadedPlayers[0].championId).to.equal 412
@@ -80,7 +80,7 @@ describe 'match API', ->
             expect(loadedPlayers[1].summoner?.id).to.equal 2
             expect(loadedPlayers[1].summoner?.name).to.equal "SummonerB"
 
-        it 'should work when IDs are specified', (_) ->
+        it 'should work when IDs are specified', ->
             client = lol.client { apiKey: 'TESTKEY', cache: lol.lruCache(50) }
             testUtils.expectRequests client, [
                 {
@@ -94,8 +94,9 @@ describe 'match API', ->
                 {championId: 266, teamId: 200, summonerId: 2}
             ]
 
-            loadedPlayers = client._loadPlayers players, _
-            checkLoadedPlayers loadedPlayers
+            client._loadPlayersAsync players
+            .then (loadedPlayers) ->
+                checkLoadedPlayers loadedPlayers
 
         it 'should work when names are specified', (_) ->
             client = lol.client {apiKey: 'TESTKEY', cache: lol.lruCache(50)}
@@ -115,8 +116,9 @@ describe 'match API', ->
                 {championKey: "Aatrox", team: "red",  summonerName: "summonerb"}
             ]
 
-            loadedPlayers = client._loadPlayers players, _
-            checkLoadedPlayers loadedPlayers
+            client._loadPlayersAsync players
+            .then (loadedPlayers) ->
+                checkLoadedPlayers loadedPlayers
 
     describe 'getTeamIdForSummonerId', ->
         client = lol.client {apiKey: 'TESTKEY', cache: lol.lruCache(50)}
