@@ -1,6 +1,9 @@
-Client = require './client'
+exports.constants = require './constants'
 
-exports.client = (options) -> new Client(options)
+exports.client = (options) ->
+    Client = require './client'
+    new Client(options)
+
 exports.inMemoryCache = ->
     InMemoryCache = require('./cache/inMemoryCache')
     return new InMemoryCache()
