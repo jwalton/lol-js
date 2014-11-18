@@ -7,3 +7,17 @@ exports.maps = {
     "10": {name: "Twisted Treeline",    notes: "Current Version"}
     "12": {name: "Howling Abyss",       notes: "ARAM Map"}
 }
+
+exports.regions = {
+    br:   {name: "Brazil"}
+    eune: {name: "EU Nordic & East"}
+    euw:  {name: "EU West"}
+    kr:   {name: "Korea"}
+    lan:  {name: "Latin America North"}
+    las:  {name: "Latin America South"}
+    na:   {name: "North America"}
+    oce:  {name: "Oceania"}
+    pbe:  {name: "Public Beta Environment", isBeta: true}
+    ru:   {name: "Russia"}
+    tr:   {name: "Turkey"}
+}

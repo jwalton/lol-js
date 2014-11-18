@@ -99,7 +99,8 @@ types exist:
 * `lol.redisCache({host, port, keyPrefix})` - Caches objects in Redis.  `host` and `port` are
   the connection details for your redis server and default to `'127.0.0.1'` and `6379`,
   respectively.  `keyPrefix` is a prefix to prepend to all keys stored in Redis and defaults
-  to `'loljs-'`.
+  to `'loljs-'`.  You may want to read about [using Redis as an LRU cache](http://redis.io/topics/lru-cache)
+  if you want to use Redis, or you can risk running out of memory.
 
 If you don't want to use one of the built in cache types, you can easily specify your own caching
 functions.  The `cache` parameter passed to a new client is a `{set, get, destroy}` object, where
