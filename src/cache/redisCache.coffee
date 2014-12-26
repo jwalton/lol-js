@@ -15,7 +15,8 @@ module.exports = class RedisCache
     get: (params, done) ->
         @client.get "#{@keyPrefix}-#{params.key}", (err, answer) ->
             return done err if err?
-            done JSON.parse(answer)
+            answer = JSON.parse answer
+            done null, answer
 
     set: (params, value) ->
         key = "#{@keyPrefix}-#{params.key}"
