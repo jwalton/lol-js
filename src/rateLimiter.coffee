@@ -12,7 +12,7 @@ module.exports = class LolRateLimiter
 
     # Returns a promise that waits until the next event can occur.
     wait: ->
-        all = @Promise.all @limiters.map (limiter, index) =>
+        @Promise.all @limiters.map (limiter, index) =>
             new @Promise (resolve, reject) ->
                 limiter.removeTokens 1, (err) ->
                     return reject(err) if err?

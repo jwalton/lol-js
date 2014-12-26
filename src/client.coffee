@@ -9,6 +9,11 @@ utils = require './utils'
 
 RateLimiter = require './rateLimiter'
 
+MAX_RETRIES_ON_RIOT_API_UNAVAILABLE = 10
+TIME_TO_WAIT_FOR_RIOT_API_IN_MS = 100
+
+ONE_MONTH_IN_SECONDS = 30 * 24 * 60 * 60
+
 # Emits the following events:
 # * `hitRateLimit` if the client receives a rate limit error from the server.  This shouldn't
 #   happen, but this is here so we can monitor and make sure it doesn't.  :)
@@ -30,9 +35,10 @@ module.exports = class Client extends EventEmitter
         if !options.apiKey? then throw new Error 'apiKey is required.'
         @apiKey = options.apiKey
         @defaultRegion = options.defaultRegion ? 'na'
-        @cacheTTL = options.cacheTTL ? {
+        @cacheTTL = ld.defaults {}, options.cacheTTL, {
             short: 60 * 5  # 5 minutes
-            long:  null    # Forever
+            long:  ONE_MONTH_IN_SECONDS
+            flex:  ONE_MONTH_IN_SECONDS
         }
 
         if options.cache?
@@ -42,19 +48,43 @@ module.exports = class Client extends EventEmitter
                 get: (params) =>
                     return new @Promise (resolve, reject) =>
                         answer = options.cache.get params, (err, answer) =>
-                            if answer? then @_cacheHits++ else @_cacheMisses++
                             if err?
-                                @_cacheErrors++
+                                @_stats.errors++
                                 @emit 'cacheGetError', err
                                 return resolve null
 
+                            if !answer?
+                                @_stats.misses++
+                            else
+                                @_stats.hits++
+                                if answer.cacheTime?
+                                    resolve answer
+                                else
+                                    # Cache entry is from v1.3.3 or earlier
+                                    if answer is 'none' then answer = null
+                                    resolve {value: answer, cacheTime: 0, expires: 0}
+
                             resolve answer
+
                 set: (params, value) =>
                     try
-                        options.cache.set(params, value)
+                        cacheTime = Date.now()
+                        cacheValue = {value, cacheTime}
+
+                        if params.ttl?
+                            cacheValue.expires = cacheTime + params.ttl * 1000
+
+                            # If flexCache is enabled, cache for the maximum of the TTL or the
+                            # flexCache TTL
+                            if @cacheTTL.flex? and (params.ttl < @cacheTTL.flex)
+                                params = ld.extend {}, params, {ttl: @cacheTTL.flex}
+
+                        options.cache.set params, cacheValue
+
                     catch err
-                        @_cacheErrors++
+                        @_stats.errors++
                         @emit 'cacheSetError', err
+
                 destroy: -> options.cache.destroy?()
 
             }
@@ -72,11 +102,14 @@ module.exports = class Client extends EventEmitter
         @_queuedRequests = []
         @_processingRequests = false
 
-        @_cacheHits = 0
-        @_cacheMisses = 0
-        @_cacheErrors = 0
-        @_hitRateLimit = 0
-        @_queueHighWaterMark = 0
+        @_stats = {
+            hits: 0
+            misses: 0
+            errors: 0
+            rateLimitErrors: 0
+            queueHighWaterMark: 0
+            riotApiUnavailable: 0
+        }
         @_request = require 'request'
 
     # Destroy this client.
@@ -84,17 +117,28 @@ module.exports = class Client extends EventEmitter
         @cache.destroy()
 
     # Return cache statistics
-    getStats: -> {
-        hits: @_cacheHits,
-        misses: @_cacheMisses
-        errors: @_cacheErrors
-        rateLimitErrors: @_hitRateLimit
-        queueLength: @_queuedRequests.length
-        queueHighWaterMark: @_queueHighWaterMark
-    }
+    getStats: ->
+        ld.merge {}, @_stats, {
+            queueLength: @_queuedRequests.length
+        }
+
+    _sleepAsync: (durationInMs) ->
+        return new @Promise (resolve, reject) ->
+            setTimeout (-> resolve()), durationInMs
 
     # This sends a request to the Riot API, without queueing it.
-    _doRequest: ({url, caller}) ->
+    #
+    # * `params.url` - The URL to fetch from.
+    # * `params.caller` - The name of the public function making this request.
+    # * `params.retries` - The number of times we have retried this request due to the Riot API
+    #   being unavailable.
+    # * `params.allowRetries` - If false, this will not retry when the Riot API is unavailable.
+    #
+    _doRequest: (params) ->
+        {url, caller} = params
+        retries = params.retries ? 0
+        allowRetries = params.allowRetries ? true
+
         return new @Promise (resolve, reject) =>
             @_request url, (err, response, body) =>
                 try
@@ -102,24 +146,44 @@ module.exports = class Client extends EventEmitter
 
                     if response.statusCode is 429
                         # Hit rate limit.  Try again later.
-                        @_hitRateLimit++
+                        @_stats.rateLimitErrors++
+
                         return @_rateLimiter.wait()
-                        .then => @_doRequest({url, caller}).then resolve, reject
+                        # Don't pass in retries - retry forever on a rate limit error
+                        .then => @_doRequest({url, caller, allowRetries}).then resolve, reject
+
                     else if response.statusCode is 404
                         return resolve null
+
                     else if response.statusCode is 503
-                        err = new Error("Riot API is temporarily unavailable")
-                        err.statusCode = response.statusCode
-                        return reject err
+                        @_riotApiUnavailable++
+                        if allowRetries and retries < MAX_RETRIES_ON_RIOT_API_UNAVAILABLE
+                            return @_sleepAsync TIME_TO_WAIT_FOR_RIOT_API_IN_MS
+                            .then =>
+                                # We probably don't need the rate limiter here... But,
+                                # because we keep processing requests from the queue, we might
+                                # end up with a whole bunch of requests queued up.  The rate limiter
+                                # call here won't slow us down more than the sleep anyways.
+                                return @_rateLimiter.wait()
+                            .then =>
+                                @_doRequest({url, caller, allowRetries, retries: retries + 1})
+                                .then(resolve, reject)
+                            .catch reject
+                        else
+                            err = new Error("Riot API is temporarily unavailable")
+                            err.statusCode = response.statusCode
+                            return reject err
+
                     else if response.statusCode isnt 200
                         err = new Error("Error calling #{params.caller}: #{response.statusCode}")
                         err.statusCode = response.statusCode
                         return reject err
+
                     else
                         return resolve JSON.parse(body)
+
                 catch err
                     reject err
-
 
     # Starts the "background worker" which drains requests from the queue and sends them.
     _startRequestWorker: ->
@@ -135,11 +199,19 @@ module.exports = class Client extends EventEmitter
                 @_rateLimiter.wait().then =>
                     # Go process another request immediately - we don't want to wait for this
                     # request to finish, we just want to wait for the rate limiter.
+                    #
+                    # TODO: If the Riot API is unavailable, should we stop pulling stuff off
+                    # the work queue here?  We could end up with a whole bunch of queries
+                    # "in flight" at the same time.
+                    #
                     setImmediate doWork
 
-                    {url, caller, resolve, reject} = @_queuedRequests.shift()
-                    @_doRequest({url, caller}).then(resolve, reject)
+                    {url, caller, allowRetries, resolve, reject} = @_queuedRequests.shift()
+                    @_doRequest({url, caller, allowRetries}).then(resolve, reject)
+
                 .catch (err) ->
+                    # This should never happen.
+                    console.err "Fatal error in lol-js worker"
                     console.err err.stack ? err
                     process.exit(-1)
 
@@ -159,7 +231,7 @@ module.exports = class Client extends EventEmitter
     #
     # Returns a promise.
     #
-    _riotRequest: (params) ->
+    _riotRequest: (params, haveCached) ->
         if params.queryParams
             # Sort the quereyParams so the URL will be the same for the same query.
             queryParams = ld(params.queryParams)
@@ -177,20 +249,20 @@ module.exports = class Client extends EventEmitter
         caller = params.caller
         if !(params.rateLimit ? true)
             # Not rate limited - do this request immediately instead of adding it to the queue.
-            answer = @_doRequest {url, caller}
+            answer = @_doRequest {url, caller, allowRetries: !haveCached}
         else if (existingRequest = ld.find @_queuedRequests, {requestId})?
             # We already have a request outstanding for this query - wait for it to come back.
             answer = existingRequest.promise
         else
             # Queue the request
-            queueItem = {requestId, url, caller}
+            queueItem = {requestId, url, caller, allowRetries: !haveCached}
             answer = promise = new @Promise (resolve, reject) ->
                 # Need `setImmediate` here so `promise` will be defined.
                 queueItem.resolve = resolve
                 queueItem.reject = reject
             queueItem.promise = promise
             @_queuedRequests.push queueItem
-            @_queueHighWaterMark = Math.max @_queueHighWaterMark, @_queuedRequests.length
+            @_stats.queueHighWaterMark = Math.max @_stats.queueHighWaterMark, @_queuedRequests.length
             @_startRequestWorker()
 
         return answer
@@ -218,22 +290,37 @@ module.exports = class Client extends EventEmitter
     _riotRequestWithCache: (params, cacheParams, options) ->
         @_validateCacheParams(cacheParams)
 
+        cachedAnswer = null
+
         return @cache.get(cacheParams)
         .then (cachedAnswer) =>
+            {value, cacheTime} = cachedAnswer ? {}
+
             # If we didn't get a result from the cache, go to Riot.
-            if !cachedAnswer? or cachedAnswer is "none"
-                return @_riotRequest params
+            if !cachedAnswer? or (cachedAnswer?.expires? and cachedAnswer.expires < Date.now())
+                answer = @_riotRequest(params, cachedAnswer?)
+                .then (result) ->
+                    # Do pre-caching
+                    if options.preCache?
+                        return options.preCache result
+                    else
+                        return result
+                .then (result) =>
+                    # Store the value in the cache
+                    @cache.set cacheParams, result
+                    return result
+
+                .catch (err) ->
+                    # If an error occurs fetching the value from riot, try to use the expired value
+                    # from the cache.
+                    if cachedAnswer?
+                        return cachedAnswer.value
+                    else
+                        throw err
             else
-                return cachedAnswer
+                answer = cachedAnswer.value
+
             return answer
-        .then (result) ->
-            if options.preCache?
-                return options.preCache result
-            else
-                return result
-        .then (result) =>
-            @cache.set cacheParams, result ? "none"
-            return result
 
     # Many riot API methods take a comma delimited list of IDs as a parameter, and return
     # a map where keys are the IDs and values are the return values.  This is a function
@@ -276,12 +363,10 @@ module.exports = class Client extends EventEmitter
                 )
         .then (objects) =>
             for {id, cacheParams, object} in objects
-                if object is "none"
-                    answer[id] = null
-                else if object?
-                    answer[id] = object
+                if !object? or (object?.expires? and object.expires < Date.now())
+                    missingObjects.push {id, cacheParams, cached: object}
                 else
-                    missingObjects.push {id, cacheParams}
+                    answer[id] = object.value
 
             if missingObjects.length is 0
                 return answer
@@ -292,12 +377,13 @@ module.exports = class Client extends EventEmitter
                     missingObjects.slice(i*maxObjs, i*maxObjs + maxObjs)
 
                 return @Promise.all groups.map (group) =>
+                    haveCached = ld.every group, (g) -> g.cached?
                     @_riotRequest({
                         caller: caller,
                         region: region,
                         url: "#{baseUrl}/#{ld.pluck(group, "id").join ","}#{urlSuffix ? ''}"
                         queryParams: queryParams
-                    })
+                    }, haveCached)
                     .then (fetchedObjects = {}) =>
                         for {id, cacheParams} in group
                             # Note that Riot always returns summoner name keys as all lower case.
@@ -307,7 +393,18 @@ module.exports = class Client extends EventEmitter
                             if answer[id]? and cacheResultsFn?
                                 cacheResultFn this, region, answer[id], options
                             else
-                                @cache.set cacheParams, (answer[id] ? "none")
+                                @cache.set cacheParams, answer[id]
+                        return null
+                    .catch (err) ->
+                        # If we have an error fetching data from Riot, and we have expired
+                        # cached values for everything we were trying to fetch, then use
+                        # the expired data from the cache.
+                        for {id, cached} in group
+                            if !cached? then throw err
+                            answer[id] = cached.value
+
+                        return null
+
         .then ->
             answer
 

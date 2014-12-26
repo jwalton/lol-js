@@ -54,6 +54,41 @@ describe 'Client', ->
         expect(reqCount).to.equal 2
         expect(value).to.exist
 
+    it 'should transparently retry if the Riot API is unavailable', (_) ->
+        reqCount = 0
+
+        client = new Client {apiKey:'TESTKEY'}
+        client._request = (u, cb) ->
+            reqCount++
+            switch reqCount
+                when 1 then cb null, {statusCode: 503}, ""
+                when 2 then cb null, {statusCode: 200}, '{"fakeData": true}'
+
+        value = client.getMatch 1234, _
+        expect(reqCount).to.equal 2
+        expect(value).to.exist
+
+    it 'should not transparently retry if the Riot API is unavailable and we have a cached copy available', ->
+        reqCount = 0
+
+        client = new Client {apiKey:'TESTKEY'}
+        client._request = (u, cb) ->
+            reqCount++
+            cb null, {statusCode: 503}, ""
+
+        passed = false
+
+        return client._doRequest {
+            url: 'https://na.api.pvp.net/api/lol/na/v2.2/match/1234?includeTimeline=false&api_key=TESTKEY'
+            caller: 'clientTest'
+            allowRetries: false
+        }
+        .catch (err) ->
+            passed = err.statusCode is 503
+        .then ->
+            expect(reqCount).to.equal 1
+            if !passed then throw "Expected exception"
+
     it 'should work out that two requests are the same request', ->
         reqCount = 0
 

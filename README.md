@@ -68,10 +68,15 @@ takes a configuation object with the following options:
 * `apiKey` - the API key [assigned to you by Riot](https://developer.riotgames.com/).
 * `defaultRegion` - the region to use for queries if none is specified.  Defaults to 'na'.
 * `cache` - a cache object or `null` to disable caching (see below).
-* `cacheTTL` - a `{long, short}` object which controls how long objects are cached
+* `cacheTTL` - a `{long, short, flex}` object which controls how long objects are cached
   for.  Each is a value in seconds.  `long` applies to match objects, which don't change very
-  often.  Most objects are cached for the `short` duration.  Default is forever for `long` and
-  5 minutes for `short`.
+  often.  Most objects are cached for the `short` duration.  Default is one month for `long` and
+  5 minutes for `short`.  If `flex` is not null (defaults to one month) then all objects will be
+  stored in the cache for the `flex` TTL, however when an object is retrieved from the cache, we
+  will still try to fetch a new copy of the object from Riot if the object is older than the
+  short/long TTLs.  If the Riot API is unavailable for some reason (the Riot API rather frequently
+  returns 503) then the "expired" value will be used from the cache.  Note that if `flex` is null
+  then in such a case lol-js will retry the request a few times instead.
 * `rateLimit` - a list of limit objects.  Each limit object is a `{time, limit}` pair where `time`
   is a duration in seconds and `limit` is the maximum number of requests to make in that
   duration.  Defaults to `[{time: 10, limit: 10}, {time: 600, limit: 500}]`.
@@ -88,7 +93,7 @@ Caching
 =======
 
 lol-js will automatically cache results from Riot's API for you, allowing you to focus on using
-the data rather than worrying about rate limits.
+the data rather than worrying about rate limits and the Riot server going down.
 
 The easiest way to cache objects is to use a built-in cache type.  The following built in cache
 types exist:
