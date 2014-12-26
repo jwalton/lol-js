@@ -17,8 +17,7 @@
     }
   ],
   "scripts": {
-    "prepublish": "gulp && mocha test",
-    "build": "gulp",
+    "prepublish": "coffee -c -o lib src && mocha test",
     "test": "mocha test"
   },
   "main": "./lib/lol.js",
@@ -41,11 +40,7 @@
   "devDependencies": {
     "chai": "^1.9.1",
     "coffee-script": "^1.8.0",
-    "gulp": "^3.8.8",
-    "gulp-coffee": "^2.2.0",
-    "gulp-util": "^3.0.1",
-    "mocha": "^1.21.4",
-    "streamline": "^0.10.16"
+    "mocha": "^1.21.4"
   },
   "engines": {
     "node": ">=0.10.1"
