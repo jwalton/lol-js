@@ -1,7 +1,7 @@
 
 [![NPM](https://nodei.co/npm/lol-js.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/lol-js/)
 
-[![Dependencies Badge](https://david-dm.org/jwalton/lol-js.svg)](https://david-dm.org/)
+[![Dependencies Badge](https://img.shields.io/david/jwalton/lol-js.svg)](http://shields.io/)
 [![Npm Version](https://badge.fury.io/js/lol-js.svg)](http://badge.fury.io/js/lol-js)
 
 lol.js is a client for fetching data from the [Riot API](https://developer.riotgames.com/api/methods)
