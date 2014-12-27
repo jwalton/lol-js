@@ -1,3 +1,9 @@
+
+[![NPM](https://nodei.co/npm/lol-js.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/lol-js/)
+
+[![Dependencies Badge](https://david-dm.org/jwalton/lol-js.svg)](https://david-dm.org/)
+[![Npm Version](https://badge.fury.io/js/lol-js.svg)](http://badge.fury.io/js/lol-js)
+
 lol.js is a client for fetching data from the [Riot API](https://developer.riotgames.com/api/methods)
 for [League of Legends](http://na.leagueoflegends.com/).  There are
 [many node.js packages](https://developer.riotgames.com/discussion/riot-games-api/show/iXR9Vl2A) out
@@ -137,9 +143,3 @@ Development
 ===========
 
 If you're interested in contributing, check out the [development docs](./docs/development.md).
-
-TODO
-====
-
-* Add a logging framework.
-* Add some integration tests that go round-trip to the Riot server.
