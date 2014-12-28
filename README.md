@@ -16,6 +16,7 @@ Features
   * game-v1.3
   * lol-static-data-v1.2 (partial)
   * match-v2.2
+  * matchhistory-v2.2
   * summoner-v1.4
   * team-v2.4
   * it's fairly easy to add other APIs - if you need something please raise an issue and I'll
