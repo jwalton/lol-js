@@ -136,7 +136,7 @@ exports.methods = {
 
     # TODO: Lots more things to implement here.
 
-    # Retrieve a list of items.
+    # Retrieve a list of versions.
     #
     # Parameters:
     # * `options.region` - Region from which to retrieve data.
