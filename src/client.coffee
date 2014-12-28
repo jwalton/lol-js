@@ -293,7 +293,7 @@ module.exports = class Client extends EventEmitter
     #   prior to caching.  Should return a new result via a promise.
     #
     # Returns a promise.
-    _riotRequestWithCache: (params, cacheParams, options) ->
+    _riotRequestWithCache: (params, cacheParams, options={}) ->
         @_validateCacheParams(cacheParams)
 
         cachedAnswer = null
