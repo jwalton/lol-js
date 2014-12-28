@@ -135,9 +135,10 @@ module.exports = class Client extends EventEmitter
     # * `params.allowRetries` - If false, this will not retry when the Riot API is unavailable.
     #
     _doRequest: (params) ->
-        {url, caller} = params
-        retries = params.retries ? 0
+        params.retries ?= 0
+        {url, caller, retries} = params
         allowRetries = params.allowRetries ? true
+
 
         return new @Promise (resolve, reject) =>
             @_request url, (err, response, body) =>
@@ -148,9 +149,11 @@ module.exports = class Client extends EventEmitter
                         # Hit rate limit.  Try again later.
                         @_stats.rateLimitErrors++
 
+                        # Reset retries - retry forever on a rate limit error
+                        params.retries = 0
+
                         return @_rateLimiter.wait()
-                        # Don't pass in retries - retry forever on a rate limit error
-                        .then => @_doRequest({url, caller, allowRetries}).then resolve, reject
+                        .then => @_doRequest(params).then resolve, reject
 
                     else if response.statusCode is 404
                         return resolve null
@@ -166,17 +169,20 @@ module.exports = class Client extends EventEmitter
                                 # call here won't slow us down more than the sleep anyways.
                                 return @_rateLimiter.wait()
                             .then =>
-                                @_doRequest({url, caller, allowRetries, retries: retries + 1})
+                                params.retries++
+                                @_doRequest(params)
                                 .then(resolve, reject)
                             .catch reject
                         else
                             err = new Error("Riot API is temporarily unavailable")
                             err.statusCode = response.statusCode
+                            err.caller = caller
                             return reject err
 
                     else if response.statusCode isnt 200
                         err = new Error("Error calling #{params.caller}: #{response.statusCode}")
                         err.statusCode = response.statusCode
+                        err.caller = caller
                         return reject err
 
                     else
