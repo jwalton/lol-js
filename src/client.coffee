@@ -392,9 +392,7 @@ module.exports = class Client extends EventEmitter
                     }, haveCached)
                     .then (fetchedObjects = {}) =>
                         for {id, cacheParams} in group
-                            # Note that Riot always returns summoner name keys as all lower case.
-                            fetchedId = if ld.isString(id) then id.toLowerCase() else id
-                            answer[id] = fetchedObjects[id] ? fetchedObjects[fetchedId] ? null
+                            answer[id] = fetchedObjects[id] ? null
 
                             if answer[id]? and cacheResultsFn?
                                 cacheResultFn this, region, answer[id], options

@@ -10,17 +10,17 @@ describe 'summoner API', ->
             cache: lol.lruCache(50)
         }
         testUtils.expectRequest(client,
-            "https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/SummonerA,SummonerB",
+            "https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/summonera,summonerb",
             'summoner/byName.json')
 
-        value = client.getSummonersByName ["SummonerA", "SummonerB"], _
+        value = client.getSummonersByName ["Summoner A", "SummonerB"], _
         expect(value).to.exist
-        expect(value["SummonerA"]).to.exist
-        expect(value["SummonerA"].id).to.equal 1
+        expect(value["Summoner A"]).to.exist
+        expect(value["Summoner A"].id).to.equal 1
         expect(value["SummonerB"]).to.exist
 
         # Trying to fetch a second time should fetch from cache.
-        value = client.getSummonersByName ["SummonerA", "SummonerB"], _
+        value = client.getSummonersByName ["Summoner A", "SummonerB"], _
 
     it 'should fetch 60 summoners by name', (_) ->
         client = lol.client {

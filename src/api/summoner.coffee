@@ -10,6 +10,8 @@ api = exports.api = {
 MAX_SUMMONER_NAMES_PER_REQUEST = 40
 MAX_SUMMONER_IDS_PER_REQUEST = 40
 
+toStandardizedSummonerName = (name) -> name.toLowerCase().replace /\ /g, ''
+
 exports.methods = {
     # Get one or more summoners by name.
     #
@@ -23,17 +25,51 @@ exports.methods = {
     # Returns a hash where keys are summoner names and values are
     # `{id, name, profileIconId, revsionData, summonerLevel}` objects.  If a given summoner name
     # is not found, it will be returned as `null` in the results.
+    #
+    # Note that the Riot API will convert the keys returned in the hash to "standardized summoner
+    # names", but this function *does not*.  If you want standardized summoner names back, you
+    # need to pass in standardized summoner names
+    #
     getSummonersByNameAsync: (summonerNames, options={}) ->
         region = options.region ? @defaultRegion
+
+        # Documentation for the summoner-v1.4 API states:
+        #
+        # > The response object contains the summoner objects mapped by the standardized summoner
+        # > name, which is the summoner name in all lower case and with spaces removed. Use this
+        # > version of the name when checking if the returned object contains the data for a given
+        # > summoner. This API will also accept standardized summoner names as valid parameters,
+        # > although they are not required.
+        #
+        # We pass standardized summoner names to `_riotMultiGet`, then we map the results we get
+        # back to the original summonerNames.
+
+        namesToStandardizedNames = {}
+        standardizedNames = []
+        for summonerName in summonerNames
+            standardizedName = toStandardizedSummonerName summonerName
+            namesToStandardizedNames[summonerName] = standardizedName
+            standardizedNames.push standardizedName
+
+        # We can pass things like "Digital Quartz" to the Riot API, but the returned results will
+        # have "digitalquartz" as the key.  As best I can tell, they convert to lowercase and
+        # then strip spaces.
+
         @_riotMultiGet(
             {
                 caller: "getSummonersByName",
                 baseUrl: "#{@_makeUrl region, api}/by-name",
-                ids: summonerNames,
+                ids: standardizedNames,
                 getCacheParamsFn: summonerByNameCacheParams,
                 cacheResultFn: cacheSummoner,
                 maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
             }, options)
+        .then (result) ->
+            answer = {}
+            for summonerName in summonerNames
+                standardizedName = namesToStandardizedNames[summonerName]
+                answer[summonerName] = result[standardizedName]
+            return answer
 
     # Get one or more summoners by ID.
     #
