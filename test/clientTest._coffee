@@ -9,7 +9,8 @@ testMethod = (callClientFn, data, expected, _) ->
 
     parsedUrl = null
     client = new Client {apiKey:'TESTKEY', defaultRegion: 'na'}
-    client._request = (u, cb) ->
+    client._request = (opts, cb) ->
+        u = opts.uri
         parsedUrl = url.parse u
         cb null, {statusCode: 200}, data
     value = callClientFn client, _

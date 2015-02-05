@@ -141,7 +141,7 @@ module.exports = class Client extends EventEmitter
 
 
         return new @Promise (resolve, reject) =>
-            @_request url, (err, response, body) =>
+            @_request {uri: url, gzip: true}, (err, response, body) =>
                 try
                     return reject err if err?
 

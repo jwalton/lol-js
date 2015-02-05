@@ -35,7 +35,7 @@
     "lodash": "^2.4.1",
     "lru-cache": "^2.5.0",
     "redis": "^0.12.1",
-    "request": "^2.45.0"
+    "request": "^2.51.1"
   },
   "devDependencies": {
     "chai": "^1.9.1",

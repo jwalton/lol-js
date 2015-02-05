@@ -29,7 +29,8 @@ querystring = require 'querystring'
 #
 exports.expectRequests = (client, requests) ->
     reqCount = 0
-    client._request = (u, cb) ->
+    client._request = (opts, cb) ->
+        u = opts.uri
         reqCount++
 
         if reqCount > requests.length
