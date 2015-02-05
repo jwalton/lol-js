@@ -32,7 +32,7 @@
     "async": "^0.9.0",
     "es6-promise": "^2.0.0",
     "limiter": "^1.0.5",
-    "lodash": "^2.4.1",
+    "lodash": "^3.1.0",
     "lru-cache": "^2.5.0",
     "redis": "^0.12.1",
     "request": "^2.51.1"
@@ -40,7 +40,7 @@
   "devDependencies": {
     "chai": "^1.9.1",
     "coffee-script": "^1.8.0",
-    "mocha": "^1.21.4",
+    "mocha": "^2.1.0",
     "streamline": "^0.10.16"
   },
   "engines": {
