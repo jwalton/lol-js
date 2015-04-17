@@ -19,6 +19,7 @@ exports.methods = {
     #   each game.  These objects will automatically  be populated with summoner identities, even
     #   if they are not ranked games.  `asMatches` can either be `true`, or can be a hash of
     #   options which will be passed to `getMatch()` (e.g. `{includeTimeline: true}`)
+    #   For some games, this will only populate players on the allied team.  (For example, bot games.)
     #
     # Returns a `{games, summonerId}` object.  If `options.asMatches` is specified, returns a
     # `{games, matches, summonerId}` object.
@@ -44,25 +45,49 @@ exports.methods = {
 
         @_riotRequestWithCache(requestParams, cacheParams, {})
         .then (games) =>
+            games ?= {games: [], summonerId}
+            games.games ?= []
+
             if !options.asMatches
                 return games
             else
                 # Fetch matches in parallel
                 return @Promise.all games.games.map (game) =>
-                    matchOptions = if options.asMatches is true
-                        {region}
-                    else
-                        ld.extend {}, options.asMatches, {region}
-                    matchOptions.players = ld.clone game.fellowPlayers
-                    matchOptions.players.push {
-                        championId: game.championId,
-                        teamId: game.teamId,
-                        summonerId
+                    @recentGameToMatchAsync game, summonerId, {
+                        region,
+                        matchOptions: if options.asMatches is true then null else options.asMatches
                     }
-                    return @getMatchAsync game.gameId, matchOptions
                 .then (matches) ->
                     games.matches = matches
                     games
+
+    # Converts a `game` from `getRecentGamesForSummoner()` into a match (as per `getMatchAsync()`).
+    #
+    # This function may result in multiple calls to the Riot API, to load the match
+    # details and to load details of all the summoners in the game.
+    #
+    # For some games, this will only populate players on the allied team.  (For example, bot games.)
+    #
+    # Parameters:
+    # * `game` - a game retrieved via `getRecentGamesForSummoner()`.
+    # * `summonerId` - summoner the game was fetched for.
+    # * `options.region` - Region where to retrieve the data.
+    # * `options.matchOptions` - options to pass to `getMatchAsync()`.
+    #
+    recentGameToMatchAsync: (game, summonerId, options={}) ->
+        matchOptions = if !options.matchOptions?
+            {region: options.region}
+        else
+            ld.extend {}, options.matchOptions, {region: options.region}
+
+        matchOptions.players = ld.clone game.fellowPlayers
+        matchOptions.players.push {
+            championId: game.championId,
+            teamId: game.teamId,
+            summonerId
+        }
+
+        return @getMatchAsync game.gameId, matchOptions
 
 
 }
