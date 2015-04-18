@@ -79,7 +79,7 @@ exports.methods = {
         assert(ld.isArray(players), "'players' must be an array!")
 
         # If all participantIdentity objects are populated, we have nothing to do, so check this first.
-        return Promise.resolve(0) if ld.every(match.participantIdentities, "player")
+        return @Promise.resolve(0) if ld.every(match.participantIdentities, "player")
 
         # TODO: If less than 10 players are passed in, can we do a quick check to see if all
         # the players are here before we call @_loadPlayers?  This could potentially save us
