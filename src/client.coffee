@@ -62,22 +62,20 @@ module.exports = class Client extends EventEmitter
                                 else
                                     # Cache entry is from v1.3.3 or earlier
                                     if answer is 'none' then answer = null
-                                    resolve {value: answer, cacheTime: 0, expires: 0}
+                                    resolve {value: answer, cacheTime: 0, ttl: 0}
 
                             resolve answer
 
                 set: (params, value) =>
                     try
                         cacheTime = Date.now()
-                        cacheValue = {value, cacheTime}
+                        ttl = params.ttl ? @cacheTTL.short
+                        cacheValue = {value, cacheTime, ttl}
 
-                        if params.ttl?
-                            cacheValue.expires = cacheTime + params.ttl * 1000
-
-                            # If flexCache is enabled, cache for the maximum of the TTL or the
-                            # flexCache TTL
-                            if @cacheTTL.flex? and (params.ttl < @cacheTTL.flex)
-                                params = ld.extend {}, params, {ttl: @cacheTTL.flex}
+                        # If flexCache is enabled, cache for the maximum of the TTL or the
+                        # flexCache TTL
+                        if ttl < @cacheTTL.flex then ttl = @cacheTTL.flex
+                        if !params.ttl? then params = ld.extend {}, params, {ttl}
 
                         options.cache.set params, cacheValue
 
@@ -300,10 +298,14 @@ module.exports = class Client extends EventEmitter
 
         return @cache.get(cacheParams)
         .then (cachedAnswer) =>
-            {value, cacheTime} = cachedAnswer ? {}
+            {value, cacheTime, ttl} = cachedAnswer ? {}
+
+            # Check to see if the item has timed out
+            ttl ?= 0
+            expires = (cacheTime ? 0) + (ttl * 1000)
 
             # If we didn't get a result from the cache, go to Riot.
-            if !cachedAnswer? or (cachedAnswer?.expires? and cachedAnswer.expires < Date.now())
+            if !cachedAnswer? or (expires < Date.now())
                 answer = @_riotRequest(params, cachedAnswer?)
                 .then (result) ->
                     # Do pre-caching
