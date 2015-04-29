@@ -6,7 +6,7 @@ describe 'lol-static-data API', ->
     it 'should fetch champions by id', (_) ->
         client = lol.client {apiKey: 'TESTKEY'}
         testUtils.expectRequest(client,
-            "https://na.api.pvp.net/api/lol/static-data/na/v1.2/champion?dataById=true",
+            "https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion?dataById=true",
             'static/championsById.json')
 
         champion = client.getChampionById 53, _
@@ -17,7 +17,7 @@ describe 'lol-static-data API', ->
     it 'should fetch champions by key', (_) ->
         client = lol.client {apiKey: 'TESTKEY'}
         testUtils.expectRequest(client,
-            "https://na.api.pvp.net/api/lol/static-data/na/v1.2/champion?dataById=false",
+            "https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion?dataById=false",
             'static/champions.json')
 
         champion = client.getChampionByKey "Velkoz", _
@@ -28,7 +28,7 @@ describe 'lol-static-data API', ->
     it 'should fetch champions by name', (_) ->
         client = lol.client {apiKey: 'TESTKEY'}
         testUtils.expectRequest(client,
-            "https://na.api.pvp.net/api/lol/static-data/na/v1.2/champion?dataById=false",
+            "https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion?dataById=false",
             'static/champions.json')
 
         champion = client.getChampionByName "Vel koz", _

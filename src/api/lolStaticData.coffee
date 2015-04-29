@@ -7,7 +7,7 @@ api = exports.api = {
     version: "v1.2"
 }
 
-makeUrl = (region) -> "https://#{region}.api.pvp.net/api/lol/static-data/#{region}/v1.2"
+makeUrl = (region) -> "https://global.api.pvp.net/api/lol/static-data/#{region}/v1.2"
 
 
 exports.methods = {
