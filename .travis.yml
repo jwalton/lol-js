@@ -5,3 +5,5 @@ node_js:
   - 'iojs'
 after_success:
   - 'npm coverage && cat ./coverage/lcov.info | ./node_modules/.bin/coveralls'
+after_script:
+  - 'ls -la ./coverage/*'
