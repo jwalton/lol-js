@@ -33,7 +33,9 @@ describe 'game API', ->
                 url: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/1,2,48789267,23876500,43531069,25804545,51526625,49040039,24052480,24125166"
                 sampleFile: 'summoner/byId.json'
             }, {
-                url: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/23931413,26142186,48385754,23789144,25986871,48432170"
+                # TODO: Shouldn't re-fetch the same summoners we've already fetched.
+                # url: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/23931413,26142186,48385754,23789144,25986871,48432170"
+                url: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/23931413,26142186,48385754,23789144,25986871,23876500,25804545,48432170,24052480,24125166"
                 sampleFile: 'summoner/byId.json'
             }
         ]

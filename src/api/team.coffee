@@ -1,6 +1,5 @@
 assert  = require 'assert'
 ld      = require 'lodash'
-async   = require 'async'
 matchApi = require './match'
 {promiseToCb} = require '../utils'
 

@@ -3,8 +3,9 @@ querystring = require 'querystring'
 {expect}    = require 'chai'
 testUtils   = require './testUtils'
 Client      = require '../src/client'
+LRUCache    = require '../src/cache/lruCache'
 
-testMethod = (callClientFn, data, expected, _) ->
+testMethod = (callClientFn, data, expected) ->
     {expectedHost, expectedPathname, expectedQueryParams} = expected
 
     parsedUrl = null
@@ -13,22 +14,23 @@ testMethod = (callClientFn, data, expected, _) ->
         u = opts.uri
         parsedUrl = url.parse u
         cb null, {statusCode: 200}, data
-    value = callClientFn client, _
 
-    expect(parsedUrl.protocol).to.equal('https:')
-    expect(parsedUrl.host).to.equal(expectedHost)
-    expect(parsedUrl.pathname).to.equal(expectedPathname)
-    queryParams = querystring.parse(parsedUrl.query)
-    expect(queryParams['api_key']).to.equal('TESTKEY')
-    for expectedParamName, expectedParamValue of expectedQueryParams
-        expect(queryParams[expectedParamName]).to.equal("#{expectedParamValue}", expectedParamName)
+    callClientFn client
+    .then (value) ->
+        expect(parsedUrl.protocol).to.equal('https:')
+        expect(parsedUrl.host).to.equal(expectedHost)
+        expect(parsedUrl.pathname).to.equal(expectedPathname)
+        queryParams = querystring.parse(parsedUrl.query)
+        expect(queryParams['api_key']).to.equal('TESTKEY')
+        for expectedParamName, expectedParamValue of expectedQueryParams
+            expect(queryParams[expectedParamName]).to.equal("#{expectedParamValue}", expectedParamName)
 
-    return value
+        return value
 
 describe 'Client', ->
-    it 'should generate the correct URL and parameters', (_) ->
-        value = testMethod(
-            ( (client, _) -> client.getMatch(1234, {region: 'eune'}, _) ),
+    it 'should generate the correct URL and parameters', ->
+        testMethod(
+            ( (client) -> client.getMatchAsync(1234, {region: 'eune'}) ),
             '{"fakeData": true}',
             {
                 expectedHost: 'eune.api.pvp.net'
@@ -37,11 +39,11 @@ describe 'Client', ->
                     includeTimeline: false
                     api_key: 'TESTKEY'
                 }
-            }, _)
+            })
+        .then (value) ->
+            expect(value).to.eql({fakeData: true})
 
-        expect(value).to.eql({fakeData: true})
-
-    it 'should transparently retry if we hit the rate limit', (_) ->
+    it 'should transparently retry if we hit the rate limit', ->
         reqCount = 0
 
         client = new Client {apiKey:'TESTKEY'}
@@ -51,11 +53,12 @@ describe 'Client', ->
                 when 1 then cb null, {statusCode: 429}, ""
                 when 2 then cb null, {statusCode: 200}, '{"fakeData": true}'
 
-        value = client.getMatch 1234, _
-        expect(reqCount).to.equal 2
-        expect(value).to.exist
+        client.getMatchAsync 1234
+        .then (value) ->
+            expect(reqCount).to.equal 2
+            expect(value).to.exist
 
-    it 'should transparently retry if the Riot API is unavailable', (_) ->
+    it 'should transparently retry if the Riot API is unavailable', ->
         reqCount = 0
 
         client = new Client {apiKey:'TESTKEY'}
@@ -65,9 +68,10 @@ describe 'Client', ->
                 when 1 then cb null, {statusCode: 503}, ""
                 when 2 then cb null, {statusCode: 200}, '{"fakeData": true}'
 
-        value = client.getMatch 1234, _
-        expect(reqCount).to.equal 2
-        expect(value).to.exist
+        client.getMatchAsync 1234
+        .then (value) ->
+            expect(reqCount).to.equal 2
+            expect(value).to.exist
 
     it 'should not transparently retry if the Riot API is unavailable and we have a cached copy available', ->
         reqCount = 0
@@ -116,3 +120,24 @@ describe 'Client', ->
         .then (p2Result) ->
             expect(p2Result).to.exist
             expect(p1Result).to.equal(p2Result)
+
+    it 'should fetch from the cache immediately', ->
+        client = new Client {
+            apiKey: 'TESTKEY'
+            cache: new LRUCache(50)
+        }
+
+        cacheParams = {
+            key: 'myobject',
+            ttl: 100
+            api: {name: 'myapi', version: 'v2.2'}
+            objectType: 'object'
+            region: 'na'
+            params: {foo: 'bar'}
+        }
+
+        client.cache.set cacheParams, {foo: 'bar'}
+        client.cache.get(cacheParams)
+        .then (result) ->
+            expect(result.value).to.eql {foo: 'bar'}
+

@@ -3,7 +3,6 @@ querystring = require 'querystring'
 ld = require 'lodash'
 fs = require 'fs'
 path = require 'path'
-async = require 'async'
 {Promise} = require 'es6-promise'
 utils = require './utils'
 
@@ -357,7 +356,6 @@ module.exports = class Client extends EventEmitter
         if !ld.isArray ids then ids = [ids]
 
         answer = {}
-        missingObjects = []
 
         # Try to fetch each object from the cache
         @Promise.all ids.map (id) =>
@@ -370,6 +368,7 @@ module.exports = class Client extends EventEmitter
                     reject
                 )
         .then (objects) =>
+            missingObjects = []
             for {id, cacheParams, object} in objects
                 if !object? or (object?.expires? and object.expires < Date.now())
                     missingObjects.push {id, cacheParams, cached: object}
