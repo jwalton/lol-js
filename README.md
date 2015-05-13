@@ -1,6 +1,8 @@
 
 [![NPM](https://nodei.co/npm/lol-js.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/lol-js/)
 
+[![Build Status](https://travis-ci.org/jwalton/lol-js.svg?branch=master)](https://travis-ci.org/jwalton/lol-js)
+[![Coverage Status](https://coveralls.io/repos/jwalton/lol-js/badge.svg?branch=master)](https://coveralls.io/r/jwalton/lol-js?branch=master)
 [![Dependencies Badge](https://img.shields.io/david/jwalton/lol-js.svg)](http://shields.io/)
 [![Npm Version](https://badge.fury.io/js/lol-js.svg)](http://badge.fury.io/js/lol-js)
 
