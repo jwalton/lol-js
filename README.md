@@ -3,7 +3,8 @@
 
 [![Build Status](https://travis-ci.org/jwalton/lol-js.svg?branch=master)](https://travis-ci.org/jwalton/lol-js)
 [![Coverage Status](https://coveralls.io/repos/jwalton/lol-js/badge.svg?branch=master)](https://coveralls.io/r/jwalton/lol-js?branch=master)
-[![Dependencies Badge](https://img.shields.io/david/jwalton/lol-js.svg)](http://shields.io/)
+[![Dependency Status](https://david-dm.org/jwalton/lol-js.svg)](https://david-dm.org/jwalton/lol-js)
+[![devDependency Status](https://david-dm.org/jwalton/lol-js/dev-status.svg)](https://david-dm.org/jwalton/lol-js#info=devDependencies)
 [![Npm Version](https://badge.fury.io/js/lol-js.svg)](http://badge.fury.io/js/lol-js)
 
 lol.js is a client for fetching data from the [Riot API](https://developer.riotgames.com/api/methods)
