@@ -7,10 +7,8 @@ Language
 lol-js is written in [CoffeeScript](http://coffeescript.org/), using
 the [es6-promise](https://github.com/jakearchibald/es6-promise) promise polyfill.
 
-Building lol-js
+Testing lol-js
 ===============
-
-You can build the project with `npm run build`.
 
 Run `npm test` to run unit tests.  Tests are excuted directly from the CoffeeScript source files,
 as this makes for better stack traces when things go wrong.  Note the first test may take a while
