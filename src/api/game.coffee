@@ -1,6 +1,6 @@
 assert  = require 'assert'
 ld      = require 'lodash'
-{promiseToCb} = require '../utils'
+pb      = require 'promise-breaker'
 matchApi = require './match'
 
 api = exports.api = {
@@ -24,7 +24,7 @@ exports.methods = {
     # Returns a `{games, summonerId}` object.  If `options.asMatches` is specified, returns a
     # `{games, matches, summonerId}` object.
     #
-    getRecentGamesForSummonerAsync: (summonerId, options={}) ->
+    getRecentGamesForSummoner: pb.break (summonerId, options={}) ->
         # Since we're relying on other APIs, we assert here so that if those APIs change, we'll get
         # unit test failures if we don't update this method.
         assert.equal(matchApi.api.version, "v2.2", "match API version has changed.")
@@ -53,7 +53,7 @@ exports.methods = {
             else
                 # Fetch matches in parallel
                 return @Promise.all games.games.map (game) =>
-                    @recentGameToMatchAsync game, summonerId, {
+                    @recentGameToMatch game, summonerId, {
                         region,
                         matchOptions: if options.asMatches is true then null else options.asMatches
                     }
@@ -61,7 +61,7 @@ exports.methods = {
                     games.matches = matches
                     games
 
-    # Converts a `game` from `getRecentGamesForSummoner()` into a match (as per `getMatchAsync()`).
+    # Converts a `game` from `getRecentGamesForSummoner()` into a match (as per `getMatch()`).
     #
     # This function may result in multiple calls to the Riot API, to load the match
     # details and to load details of all the summoners in the game.
@@ -72,9 +72,9 @@ exports.methods = {
     # * `game` - a game retrieved via `getRecentGamesForSummoner()`.
     # * `summonerId` - summoner the game was fetched for.
     # * `options.region` - Region where to retrieve the data.
-    # * `options.matchOptions` - options to pass to `getMatchAsync()`.
+    # * `options.matchOptions` - options to pass to `getMatch()`.
     #
-    recentGameToMatchAsync: (game, summonerId, options={}) ->
+    recentGameToMatch: pb.break (game, summonerId, options={}) ->
         matchOptions = if !options.matchOptions?
             {region: options.region}
         else
@@ -87,7 +87,10 @@ exports.methods = {
             summonerId
         }
 
-        return @getMatchAsync game.gameId, matchOptions
-
+        return @getMatch game.gameId, matchOptions
 
 }
+
+# Deprecated `Async` methods
+exports.methods.getRecentGamesForSummonerAsync = exports.methods.getRecentGamesForSummoner
+exports.methods.recentGameToMatchAsync = exports.methods.recentGameToMatch

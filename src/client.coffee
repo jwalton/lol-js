@@ -3,7 +3,9 @@ querystring = require 'querystring'
 ld = require 'lodash'
 fs = require 'fs'
 path = require 'path'
+
 {Promise} = require 'es6-promise'
+promiseTools = require 'promise-tools'
 utils = require './utils'
 
 RateLimiter = require './rateLimiter'
@@ -119,10 +121,6 @@ module.exports = class Client extends EventEmitter
             queueLength: @_queuedRequests.length
         }
 
-    _sleepAsync: (durationInMs) ->
-        return new @Promise (resolve, reject) ->
-            setTimeout (-> resolve()), durationInMs
-
     # This sends a request to the Riot API, without queueing it.
     #
     # * `params.url` - The URL to fetch from.
@@ -150,7 +148,8 @@ module.exports = class Client extends EventEmitter
                         params.retries = 0
 
                         return @_rateLimiter.wait()
-                        .then => @_doRequest(params).then resolve, reject
+                        .then =>
+                            @_doRequest(params).then resolve, reject
 
                     else if response.statusCode is 404
                         return resolve null
@@ -158,7 +157,7 @@ module.exports = class Client extends EventEmitter
                     else if response.statusCode is 503
                         @_riotApiUnavailable++
                         if allowRetries and retries < MAX_RETRIES_ON_RIOT_API_UNAVAILABLE
-                            return @_sleepAsync TIME_TO_WAIT_FOR_RIOT_API_IN_MS
+                            return promiseTools.delay TIME_TO_WAIT_FOR_RIOT_API_IN_MS
                             .then =>
                                 # We probably don't need the rate limiter here... But,
                                 # because we keep processing requests from the queue, we might
@@ -209,8 +208,21 @@ module.exports = class Client extends EventEmitter
                     #
                     setImmediate doWork
 
-                    {url, caller, allowRetries, resolve, reject} = @_queuedRequests.shift()
-                    @_doRequest({url, caller, allowRetries}).then(resolve, reject)
+                    {url, caller, allowRetries, resolve, reject, requestId} = @_queuedRequests[0]
+                    @_doRequest({url, caller, allowRetries})
+                    .then(resolve, reject)
+                    # Finally, remove the queued request.  Do this after processing, as this means if someone
+                    # tries to fetch a URL that's already been fetched, they'll still get the existing Promise
+                    # instead of potentially having a second request while we're processing the result from the first
+                    # (potentially before updating the cache.)
+                    .then(
+                        (result) =>
+                            @_queuedRequests.shift()
+                            return result
+                        (err) =>
+                            @_queuedRequests.shift()
+                            throw err
+                    )
 
                 .catch (err) ->
                     # This should never happen.
@@ -258,15 +270,12 @@ module.exports = class Client extends EventEmitter
             answer = existingRequest.promise
         else
             # Queue the request
-            queueItem = {requestId, url, caller, allowRetries: !haveCached}
-            answer = promise = new @Promise (resolve, reject) ->
-                # Need `setImmediate` here so `promise` will be defined.
-                queueItem.resolve = resolve
-                queueItem.reject = reject
-            queueItem.promise = promise
+            {promise, resolve, reject} = promiseTools.defer()
+            queueItem = {requestId, url, caller, promise, resolve, reject, allowRetries: !haveCached}
             @_queuedRequests.push queueItem
             @_stats.queueHighWaterMark = Math.max @_stats.queueHighWaterMark, @_queuedRequests.length
             @_startRequestWorker()
+            answer = promise
 
         return answer
 
@@ -421,4 +430,3 @@ do ->
         moduleName = path.basename(moduleFile, path.extname(moduleFile))
         api = require "./api/#{moduleName}"
         ld.extend Client::, api.methods
-    utils.depromisifyAll Client::, {isPrototype: true}

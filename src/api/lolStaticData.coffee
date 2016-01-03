@@ -1,5 +1,5 @@
 ld = require 'lodash'
-{promiseToCb} = require '../utils'
+pb = require 'promise-breaker'
 
 api = exports.api = {
     fullname: "lol-static-data-v1.2",
@@ -27,7 +27,7 @@ exports.methods = {
     #   'altimages', 'blurb', 'enemytips', 'image', 'info', 'lore', 'partype', 'passive',
     #   'recommended', 'skins', 'spells', 'stats', 'tags'.
     #
-    getChampionsAsync: (options={}) ->
+    getChampions: pb.break (options={}) ->
         options = ld.defaults {}, options, {
             region: @defaultRegion,
             dataById: false
@@ -54,9 +54,9 @@ exports.methods = {
     # * `id` - the ID of the champion to retrieve.
     # * `options` are the same as for `getChampions()`, except that `dataById` cannot be specified.
     #
-    getChampionByIdAsync: (id, options={}) ->
+    getChampionById: pb.break (id, options={}) ->
         options = ld.extend {}, options, {dataById: true}
-        @getChampionsAsync(options)
+        @getChampions(options)
         .then (champions) -> champions.data[id]
 
     # Retrieve a champion using its key.
@@ -65,14 +65,14 @@ exports.methods = {
     # * `id` - the ID of the champion to retrieve.
     # * `options` are the same as for `getChampions()`, except that `dataById` cannot be specified.
     #
-    getChampionByKeyAsync: (key, options={}) ->
+    getChampionByKey: pb.break (key, options={}) ->
         options = ld.extend {}, options, {dataById: false}
-        @getChampionsAsync(options)
+        @getChampions(options)
         .then (champions) -> champions.data[key]
 
-    getChampionByNameAsync: (name, options={}) ->
+    getChampionByName: pb.break (name, options={}) ->
         options = ld.extend {}, options, {dataById: false}
-        @getChampionsAsync(options)
+        @getChampions(options)
         .then (champions) ->
             # First try the name as a key, because this is the fastest way to do this.
             answer = champions.data[name]
@@ -102,7 +102,7 @@ exports.methods = {
     #    inStore, into, maps, requiredChampion, sanitizedDescription, specialRecipe, stacks, stats,
     #    tags, tree
     #
-    getItemsAsync: (options={}) ->
+    getItems: pb.break (options={}) ->
         options = ld.defaults {}, options, {
             region: @defaultRegion,
             dataById: false
@@ -129,8 +129,8 @@ exports.methods = {
     # * `id` - the ID of the item to retrieve.
     # * `options` are the same as for `getItems()`.
     #
-    getItemByIdAsync: (id, options={}) ->
-        @getItemsAsync(options)
+    getItemById: pb.break (id, options={}) ->
+        @getItems(options)
         .then (objects) ->
             return objects.data[id]
 
@@ -140,7 +140,7 @@ exports.methods = {
     #
     # Parameters:
     # * `options.region` - Region from which to retrieve data.
-    getVersionsAsync: (options={}) ->
+    getVersions: pb.break (options={}) ->
         region = options?.region ? @defaultRegion
 
         requestParams = {
@@ -160,3 +160,12 @@ exports.methods = {
     teamNameToId: (teamName) ->
         if teamName.toLowerCase() is "blue" then 100 else 200
 }
+
+# Deprecated `Async` methods
+exports.methods.getChampionsAsync = exports.methods.getChampions
+exports.methods.getChampionByIdAsync = exports.methods.getChampionById
+exports.methods.getChampionByKeyAsync = exports.methods.getChampionByKey
+exports.methods.getChampionByNameAsync = exports.methods.getChampionByName
+exports.methods.getItemsAsync = exports.methods.getItems
+exports.methods.getItemByIdAsync = exports.methods.getItemById
+exports.methods.getVersionsAsync = exports.methods.getVersions

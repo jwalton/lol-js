@@ -1,7 +1,7 @@
 assert  = require 'assert'
 ld      = require 'lodash'
+pb      = require 'promise-breaker'
 matchApi = require './match'
-{promiseToCb} = require '../utils'
 
 api = exports.api = {
     fullname: "team-v2.4",
@@ -19,7 +19,7 @@ exports.methods = {
     #
     # Returns a hash of lists of TeamDTO objects, indexed by summonerId.
     #
-    getTeamsBySummonerAsync: (summonerIds, options={}) ->
+    getTeamsBySummoner: pb.break (summonerIds, options={}) ->
         # TODO: cache each team by teamId here?
         region = options.region ? @defaultRegion
         @_riotMultiGet(
@@ -44,7 +44,7 @@ exports.methods = {
     #
     # Returns a hash of lists of TeamDTO objects, indexed by teamId.
     #
-    getTeamsAsync: (teamIds, options={}) ->
+    getTeams: pb.break (teamIds, options={}) ->
         region = options.region ? @defaultRegion
         @_riotMultiGet(
             {
@@ -65,7 +65,12 @@ exports.methods = {
     # This is a convenience wrapper around getTeams which takes a single `teamId`, and returns the
     # team associated with it.
     #
-    getTeamAsync: (teamId, options={}) ->
-        @getTeamsAsync teamId, options
+    getTeam: pb.break (teamId, options={}) ->
+        @getTeams [teamId], options
         .then (answer) -> return answer?[teamId]
 }
+
+# Deprecated `Async` methods
+exports.methods.getTeamsBySummonerAsync = exports.methods.getTeamsBySummoner
+exports.methods.getTeamsAsync = exports.methods.getTeams
+exports.methods.getTeamAsync = exports.methods.getTeam

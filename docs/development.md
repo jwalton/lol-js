@@ -5,14 +5,13 @@ Language
 ========
 
 lol-js is written in [CoffeeScript](http://coffeescript.org/), using
-the [es6-promise](https://github.com/jakearchibald/es6-promise) promise polyfill.
+the [es6-promise](https://github.com/jakearchibald/es6-promise) Promise polyfill.
 
 Testing lol-js
 ===============
 
-Run `npm test` to run unit tests.  Tests are excuted directly from the CoffeeScript source files,
-as this makes for better stack traces when things go wrong.  Note the first test may take a while
-to run, as compiling streamline files is slow.
+Run `npm test` to run unit tests.  Tests are executed directly from the CoffeeScript source files,
+as this makes for better stack traces when things go wrong.
 
 Design Overview
 ===============
@@ -33,7 +32,7 @@ api = exports.api = {
 }
 
 exports.methods = {
-    getRecentGamesForSummonerAsync: (summonerId, options) ->
+    getRecentGamesForSummoner: pb.break (summonerId, options) ->
         ...
 }
 ```
@@ -49,11 +48,8 @@ The `api` object is also handy for using the `_makeUrl` helper function.
 `methods` is a hash of functions which will be mixed in to the `Client` class's prototype.  These
 methods can call into methods in the core `Client` class or even into methods defined in other APIs.
 
-For any method name that end is `Async`, `Client` will automatically have a method added to it
-without the `Async` suffix that accepts a callback as the last parameter, so in the above example
-the client will end up with a method called `getRecentGamesForSummonerAsync(summonerId, options)`
-which returns a promise, and `getRecentGamesForSummoner(summonerId, options, done)`, which will
-call `done(err, result)` with a result.
+Methods are generally written to return a Promise, and then passed through promise-breaker's `break`
+to make them accept an optional callback.
 
 Writing API Modules
 ===================

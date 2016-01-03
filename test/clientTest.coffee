@@ -30,7 +30,7 @@ testMethod = (callClientFn, data, expected) ->
 describe 'Client', ->
     it 'should generate the correct URL and parameters', ->
         testMethod(
-            ( (client) -> client.getMatchAsync(1234, {region: 'eune'}) ),
+            ( (client) -> client.getMatch(1234, {region: 'eune'}) ),
             '{"fakeData": true}',
             {
                 expectedHost: 'eune.api.pvp.net'
@@ -53,7 +53,7 @@ describe 'Client', ->
                 when 1 then cb null, {statusCode: 429}, ""
                 when 2 then cb null, {statusCode: 200}, '{"fakeData": true}'
 
-        client.getMatchAsync 1234
+        client.getMatch 1234
         .then (value) ->
             expect(reqCount).to.equal 2
             expect(value).to.exist
@@ -68,7 +68,7 @@ describe 'Client', ->
                 when 1 then cb null, {statusCode: 503}, ""
                 when 2 then cb null, {statusCode: 200}, '{"fakeData": true}'
 
-        client.getMatchAsync 1234
+        client.getMatch 1234
         .then (value) ->
             expect(reqCount).to.equal 2
             expect(value).to.exist
@@ -110,8 +110,8 @@ describe 'Client', ->
             switch reqCount
                 when 1 then cb null, {statusCode: 200}, '{"fakeData": true}'
 
-        p1 = client.getMatchAsync 1234
-        p2 = client.getMatchAsync 1234
+        p1 = client.getMatch 1234
+        p2 = client.getMatch 1234
         p1Result = null
         p1.then (r) ->
             p1Result = r
@@ -140,4 +140,3 @@ describe 'Client', ->
         client.cache.get(cacheParams)
         .then (result) ->
             expect(result.value).to.eql {foo: 'bar'}
-

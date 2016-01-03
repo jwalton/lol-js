@@ -19,7 +19,7 @@ Features
   * game-v1.3
   * lol-static-data-v1.2 (partial)
   * match-v2.2
-  * matchhistory-v2.2
+  * matchlist-v2.2
   * summoner-v1.4
   * team-v2.4
   * it's fairly easy to add other APIs - if you need something please raise an issue and I'll
@@ -62,7 +62,7 @@ var lolClient = lol.client({
     defaultRegion: 'na',
     cache: lol.redisCache({host: '127.0.0.1', port: 6379})
 };
-lolClient.getChampionByIdAsync(53, {champData: ['all']})
+lolClient.getChampionById(53, {champData: ['all']})
 .then(function (data) {
     console.log("Found ", data.name);
     lolClient.destroy();

@@ -52,7 +52,6 @@ exports.expectRequests = (client, requests) ->
             expect(queryParams['api_key'])
                 .to.equal('TESTKEY', "URL query parameter api_key has incorrect value")
 
-            # TODO: use `eql` here instead?
             for expectedParamName, expectedParamValue of expectedQuery
                 expect(queryParams[expectedParamName]).to.equal("#{expectedParamValue}",
                     "URL query parameter #{expectedParamName} has incorrect value")

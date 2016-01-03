@@ -1,5 +1,5 @@
 ld = require 'lodash'
-{promiseToCb} = require '../utils'
+pb = require 'promise-breaker'
 
 api = exports.api = {
     fullname: "summoner-v1.4",
@@ -30,7 +30,7 @@ exports.methods = {
     # names", but this function *does not*.  If you want standardized summoner names back, you
     # need to pass in standardized summoner names
     #
-    getSummonersByNameAsync: (summonerNames, options={}) ->
+    getSummonersByName: pb.break (summonerNames, options={}) ->
         region = options.region ? @defaultRegion
 
         # Documentation for the summoner-v1.4 API states:
@@ -81,7 +81,7 @@ exports.methods = {
     # Returns a hash where keys are summoner IDs and values are
     # `{id, name, profileIconId, revsionData, summonerLevel}` objects.  If a given summoner ID
     # is not found, it will be returned as `null` in the results.
-    getSummonersByIdAsync: (summonerIds, options={}) ->
+    getSummonersById: pb.break (summonerIds, options={}) ->
         region = options.region ? @defaultRegion
         @_riotMultiGet(
             {
@@ -98,8 +98,8 @@ exports.methods = {
     # fetches full summoner records and then maps them.  This increases the likelyhood that we'll
     # find the appropriate records in the cache.
     #
-    getSummonerNamesAsync: (summonerIds, options={}) ->
-        @getSummonersByIdAsync summonerIds, options
+    getSummonerNames: pb.break (summonerIds, options={}) ->
+        @getSummonersById summonerIds, options
         .then (summoners) ->
             return ld.mapValues summoners, (x) -> x?.name ? null
 
@@ -112,7 +112,7 @@ exports.methods = {
     #
     # Returns a hash where keys are summoner IDs and values are `{pages, summonerId}` objects.  If
     # a given summoner ID is not found, the value will be `null` in the results.
-    getSummonerMasteriesAsync: (summonerIds, options={}) ->
+    getSummonerMasteries: pb.break (summonerIds, options={}) ->
         region = options.region ? @defaultRegion
         @_riotMultiGet(
             {
@@ -133,7 +133,7 @@ exports.methods = {
     #
     # Returns a hash where keys are summoner IDs and values are `{pages, summonerId}` objects.  If
     # a given summoner ID is not found, the value will be `null` in the results.
-    getSummonerRunesAsync: (summonerIds, options={}) ->
+    getSummonerRunes: pb.break (summonerIds, options={}) ->
         region = options.region ? @defaultRegion
         @_riotMultiGet(
             {
@@ -164,3 +164,10 @@ summonerByIdCacheParams = (objectType) -> (client, region, summonerId) -> {
         objectType: objectType
         params: {summonerId}
     }
+
+# Deprecated `Async` methods
+exports.methods.getSummonersByNameAsync = exports.methods.getSummonersByName
+exports.methods.getSummonersByIdAsync = exports.methods.getSummonersById
+exports.methods.getSummonerNamesAsync = exports.methods.getSummonerNames
+exports.methods.getSummonerMasteriesAsync = exports.methods.getSummonerMasteries
+exports.methods.getSummonerRunesAsync = exports.methods.getSummonerRunes

@@ -1,8 +1,8 @@
 assert           = require 'assert'
 ld               = require 'lodash'
+pb               = require 'promise-breaker'
 summonerApi      = require './summoner'
 lolStaticDataApi = require './lolStaticData'
-{promiseToCb} = require '../utils'
 
 api = exports.api = {
     fullname: "match-v2.2",
@@ -25,7 +25,7 @@ exports.methods = {
     #
     # Returns a promise.
     #
-    getMatchAsync: (matchId, options={}) ->
+    getMatch: pb.break (matchId, options={}) ->
         options = ld.defaults {}, options, {
             region: @defaultRegion
             includeTimeline: false
@@ -49,7 +49,7 @@ exports.methods = {
         if options.players?
             requestOptions.preCache = (match) =>
                 return match if !match?
-                @populateMatchAsync match, options.players, options
+                @populateMatch match, options.players, options
                 .then -> return match
 
         @_riotRequestWithCache requestParams, cacheParams, requestOptions
@@ -75,7 +75,7 @@ exports.methods = {
     #
     # Returns promise - the number of participantIdentities that were filled in, via the callback.
     #
-    populateMatchAsync: (match, players, options={}) ->
+    populateMatch: pb.break (match, players, options={}) ->
         assert(ld.isArray(players), "'players' must be an array!")
 
         # If all participantIdentity objects are populated, we have nothing to do, so check this first.
@@ -85,7 +85,7 @@ exports.methods = {
         # the players are here before we call @_loadPlayers?  This could potentially save us
         # some API calls.
 
-        @_loadPlayersAsync players, options
+        @_loadPlayers players, options
         .then (playerData) ->
             populated = 0
             participantIdentitiesById = ld.indexBy match.participantIdentities, "participantId"
@@ -114,7 +114,8 @@ exports.methods = {
     # objects, return a collection of `{championId, teamId, summoner}` objects.  `summoner` will be
     # a Riot API object.  If there are any objects where the given champion or summoner cannot be
     # loaded, these results will be omitted from the returned data.
-    _loadPlayersAsync: (players, options={}) ->
+    _loadPlayers: (players, options={}) ->
+        client = this
         @Promise.resolve().then =>
             players.forEach (player) ->
                 if !player.summonerId? and !player.summonerName?
@@ -129,14 +130,14 @@ exports.methods = {
             # Fetch summoners by ID if available
             summonerIds = ld(players).filter('summonerId').map('summonerId').value()
             summonersByIdPromise = if summonerIds.length > 0
-                @getSummonersByIdAsync(summonerIds, options)
+                @getSummonersById(summonerIds, options)
             else
                 @Promise.resolve {}
 
             # Only pull data for summoners where we don't have an ID.
             summonerNames = ld(players).reject('summonerId').map("summonerName").value()
             summonersByNamePromise = if summonerNames.length > 0
-                @getSummonersByNameAsync(summonerNames, options)
+                @getSummonersByName(summonerNames, options)
             else
                 @Promise.resolve {}
 
@@ -149,7 +150,7 @@ exports.methods = {
                 return @Promise.all players.map (player) =>
                     summoner = null
 
-                    @Promise.resolve().then ->
+                    @Promise.resolve().then =>
                         summoner = if player.summonerId?
                             summonersById[player.summonerId]
                         else
@@ -160,10 +161,10 @@ exports.methods = {
                         else
                             # Use `getChampionByName()`, because it will always try to get by key first, but
                             # it is much more forgiving than `getChampionByKey()`.
-                            @getChampionByNameAsync(player.championKey, options)
+                            @getChampionByName(player.championKey, options)
                         )
 
-                    .then (champion) ->
+                    .then (champion) =>
                         if summoner? and champion?
                             return {
                                 summoner,
@@ -193,3 +194,7 @@ exports.methods = {
 
         return answer
 }
+
+# Deprecated `Async` methods
+exports.methods.getMatchAsync = exports.methods.getMatch
+exports.methods.populateMatchAsync = exports.methods.populateMatch
