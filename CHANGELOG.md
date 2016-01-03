@@ -1,3 +1,7 @@
+# v2.0.1
+
+* Fix critical bug in how requests are queued.
+
 # v2.0.0
 
 * Breaking Change - Remove support for matchhistory-v2.2.

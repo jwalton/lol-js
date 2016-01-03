@@ -12,7 +12,7 @@ for [League of Legends](http://na.leagueoflegends.com/).  There are
 [many node.js packages](https://developer.riotgames.com/discussion/riot-games-api/show/iXR9Vl2A) out
 there which give you access to the Riot API, but none has as complete a feature set as lol.js.
 
-**Note 2.0.0 has breaking changes.**  See the [changelog](./CHANGELOG.md) for details.
+**Note 2.x has breaking changes.**  See the [changelog](./CHANGELOG.md) for details.
 
 Features
 ========
