@@ -31,7 +31,7 @@
   "dependencies": {
     "es6-promise": "^3.0.2",
     "limiter": "^1.0.5",
-    "lodash": "^3.8.0",
+    "lodash": "^3.10.1",
     "lru-cache": "^4.0.0",
     "promise-breaker": "^2.2.1",
     "promise-tools": "^0.3.0",
