@@ -14,9 +14,8 @@ exports.methods = {
     # Retrieve a match.
     #
     # Parameters:
+    # * `region` - The region to fetch the match from.
     # * `matchId` - The ID of the match.
-    # * `options.region` - The region of the summoner.  Defaults to the `defaultRegion` passed
-    #   to the construtor.
     # * `options.includeTimeline` - Flag indicating whether or not to include match timeline data.
     #   Defaults to `true`.
     # * `options.players` - same as the `players` parameter to `populateMatch()`.  If `players`
@@ -25,12 +24,10 @@ exports.methods = {
     #
     # Returns a promise.
     #
-    getMatch: pb.break (matchId, options={}) ->
+    getMatch: pb.break (region, matchId, options={}) ->
         options = ld.defaults {}, options, {
-            region: @defaultRegion
             includeTimeline: false
         }
-        region = options.region ? @defaultRegion
 
         requestParams = {
             caller: "getMatch",
@@ -49,7 +46,7 @@ exports.methods = {
         if options.players?
             requestOptions.preCache = (match) =>
                 return match if !match?
-                @populateMatch match, options.players, options
+                @populateMatch region, match, options.players, options
                 .then -> return match
 
         @_riotRequestWithCache requestParams, cacheParams, requestOptions
@@ -63,6 +60,7 @@ exports.methods = {
     # Note that the `matchHistoryUri` is not populated in `participantIdentities`.
     #
     # Paramaters:
+    # * `region` is the region to fetch data from.
     # * `match` is a match record returned from `getMatch()`.
     # * `players` is an array of player descriptors which, ideally, are
     #   `{championId, teamId, summonerId}` objects (e.g. the `fellowPlayers` field in a game
@@ -70,12 +68,10 @@ exports.methods = {
     #   and provide a chamion key or a champion name.  You can similarly replace `summonerId` with
     #   `summonerName`.  You can also replace `teamId` with `team` which should be either "red" or
     #   "blue".
-    # * `options.region` - The region of the summoner.  Defaults to the `defaultRegion` passed
-    #   to the construtor.
     #
     # Returns promise - the number of participantIdentities that were filled in, via the callback.
     #
-    populateMatch: pb.break (match, players, options={}) ->
+    populateMatch: pb.break (region, match, players, options={}) ->
         assert(ld.isArray(players), "'players' must be an array!")
 
         # If all participantIdentity objects are populated, we have nothing to do, so check this first.
@@ -85,7 +81,7 @@ exports.methods = {
         # the players are here before we call @_loadPlayers?  This could potentially save us
         # some API calls.
 
-        @_loadPlayers players, options
+        @_loadPlayers region, players, options
         .then (playerData) ->
             populated = 0
             participantIdentitiesById = ld.indexBy match.participantIdentities, "participantId"
@@ -114,7 +110,7 @@ exports.methods = {
     # objects, return a collection of `{championId, teamId, summoner}` objects.  `summoner` will be
     # a Riot API object.  If there are any objects where the given champion or summoner cannot be
     # loaded, these results will be omitted from the returned data.
-    _loadPlayers: (players, options={}) ->
+    _loadPlayers: (region, players, options={}) ->
         client = this
         @Promise.resolve().then =>
             players.forEach (player) ->
@@ -130,14 +126,14 @@ exports.methods = {
             # Fetch summoners by ID if available
             summonerIds = ld(players).filter('summonerId').map('summonerId').value()
             summonersByIdPromise = if summonerIds.length > 0
-                @getSummonersById(summonerIds, options)
+                @getSummonersById(region, summonerIds)
             else
                 @Promise.resolve {}
 
             # Only pull data for summoners where we don't have an ID.
             summonerNames = ld(players).reject('summonerId').map("summonerName").value()
             summonersByNamePromise = if summonerNames.length > 0
-                @getSummonersByName(summonerNames, options)
+                @getSummonersByName(region, summonerNames)
             else
                 @Promise.resolve {}
 
@@ -161,7 +157,7 @@ exports.methods = {
                         else
                             # Use `getChampionByName()`, because it will always try to get by key first, but
                             # it is much more forgiving than `getChampionByKey()`.
-                            @getChampionByName(player.championKey, options)
+                            @getChampionByName(region, player.championKey, options)
                         )
 
                     .then (champion) =>
@@ -194,7 +190,3 @@ exports.methods = {
 
         return answer
 }
-
-# Deprecated `Async` methods
-exports.methods.getMatchAsync = exports.methods.getMatch
-exports.methods.populateMatchAsync = exports.methods.populateMatch

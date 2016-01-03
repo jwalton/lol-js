@@ -9,7 +9,7 @@ testMethod = (callClientFn, data, expected) ->
     {expectedHost, expectedPathname, expectedQueryParams} = expected
 
     parsedUrl = null
-    client = new Client {apiKey:'TESTKEY', defaultRegion: 'na'}
+    client = new Client {apiKey:'TESTKEY'}
     client._request = (opts, cb) ->
         u = opts.uri
         parsedUrl = url.parse u
@@ -30,7 +30,7 @@ testMethod = (callClientFn, data, expected) ->
 describe 'Client', ->
     it 'should generate the correct URL and parameters', ->
         testMethod(
-            ( (client) -> client.getMatch(1234, {region: 'eune'}) ),
+            ( (client) -> client.getMatch('eune', 1234) ),
             '{"fakeData": true}',
             {
                 expectedHost: 'eune.api.pvp.net'
@@ -53,7 +53,7 @@ describe 'Client', ->
                 when 1 then cb null, {statusCode: 429}, ""
                 when 2 then cb null, {statusCode: 200}, '{"fakeData": true}'
 
-        client.getMatch 1234
+        client.getMatch 'na', 1234
         .then (value) ->
             expect(reqCount).to.equal 2
             expect(value).to.exist
@@ -68,7 +68,7 @@ describe 'Client', ->
                 when 1 then cb null, {statusCode: 503}, ""
                 when 2 then cb null, {statusCode: 200}, '{"fakeData": true}'
 
-        client.getMatch 1234
+        client.getMatch 'na', 1234
         .then (value) ->
             expect(reqCount).to.equal 2
             expect(value).to.exist
@@ -92,7 +92,7 @@ describe 'Client', ->
             passed = err.statusCode is 503
         .then ->
             expect(reqCount).to.equal 1
-            if !passed then throw "Expected exception"
+            if !passed then throw new Error "Expected exception"
 
     it 'should work out that two requests are the same request', ->
         reqCount = 0
@@ -110,8 +110,8 @@ describe 'Client', ->
             switch reqCount
                 when 1 then cb null, {statusCode: 200}, '{"fakeData": true}'
 
-        p1 = client.getMatch 1234
-        p2 = client.getMatch 1234
+        p1 = client.getMatch 'na', 1234
+        p2 = client.getMatch 'na', 1234
         p1Result = null
         p1.then (r) ->
             p1Result = r

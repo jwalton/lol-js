@@ -16,11 +16,10 @@ exports.methods = {
     # Get one or more summoners by name.
     #
     # Parameters:
+    # * `region` - The region of the summoner.
     # * `summonerNames` - An array of summoner names.  Note the Riot API only allows you to
     #   pass 40 summoner names in a single request; you can pass more than 40 here, but it will
     #   result in multiple requests.
-    # * `options.region` - The region of the summoner.  Defaults to the `defaultRegion` passed
-    #   to the construtor.
     #
     # Returns a hash where keys are summoner names and values are
     # `{id, name, profileIconId, revsionData, summonerLevel}` objects.  If a given summoner name
@@ -30,9 +29,7 @@ exports.methods = {
     # names", but this function *does not*.  If you want standardized summoner names back, you
     # need to pass in standardized summoner names
     #
-    getSummonersByName: pb.break (summonerNames, options={}) ->
-        region = options.region ? @defaultRegion
-
+    getSummonersByName: pb.break (region, summonerNames) ->
         # Documentation for the summoner-v1.4 API states:
         #
         # > The response object contains the summoner objects mapped by the standardized summoner
@@ -56,6 +53,7 @@ exports.methods = {
         # then strip spaces.
 
         @_riotMultiGet(
+            region,
             {
                 caller: "getSummonersByName",
                 baseUrl: "#{@_makeUrl region, api}/by-name",
@@ -63,7 +61,8 @@ exports.methods = {
                 getCacheParamsFn: summonerByNameCacheParams,
                 cacheResultFn: cacheSummoner,
                 maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
-            }, options)
+            }
+        )
         .then (result) ->
             answer = {}
             for summonerName in summonerNames
@@ -74,23 +73,23 @@ exports.methods = {
     # Get one or more summoners by ID.
     #
     # Parameters:
+    # * `region` - The region of the summoner.
     # * `summonerIds` - An array of summoner IDs.
-    # * `options.region` - The region of the summoner.  Defaults to the `defaultRegion` passed
-    #   to the construtor.
     #
     # Returns a hash where keys are summoner IDs and values are
     # `{id, name, profileIconId, revsionData, summonerLevel}` objects.  If a given summoner ID
     # is not found, it will be returned as `null` in the results.
-    getSummonersById: pb.break (summonerIds, options={}) ->
-        region = options.region ? @defaultRegion
+    getSummonersById: pb.break (region, summonerIds) ->
         @_riotMultiGet(
+            region,
             {
                 caller: "getSummonersById",
                 baseUrl: @_makeUrl(region, api)
                 ids: summonerIds,
                 getCacheParamsFn: summonerByIdCacheParams('summoner'),
                 maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
-            }, options)
+            }
+        )
 
     # Get the names for one or more summonerIds.
     #
@@ -98,23 +97,22 @@ exports.methods = {
     # fetches full summoner records and then maps them.  This increases the likelyhood that we'll
     # find the appropriate records in the cache.
     #
-    getSummonerNames: pb.break (summonerIds, options={}) ->
-        @getSummonersById summonerIds, options
+    getSummonerNames: pb.break (region, summonerIds) ->
+        @getSummonersById region, summonerIds
         .then (summoners) ->
             return ld.mapValues summoners, (x) -> x?.name ? null
 
     # Get one or more summoner's masteries.
     #
     # Parameters:
+    # * `region` - The region of the summoner.
     # * `summonerIds` - An array of summoner IDs.
-    # * `options.region` - The region of the summoner.  Defaults to the `defaultRegion` passed
-    #   to the construtor.
     #
     # Returns a hash where keys are summoner IDs and values are `{pages, summonerId}` objects.  If
     # a given summoner ID is not found, the value will be `null` in the results.
-    getSummonerMasteries: pb.break (summonerIds, options={}) ->
-        region = options.region ? @defaultRegion
+    getSummonerMasteries: pb.break (region, summonerIds) ->
         @_riotMultiGet(
+            region,
             {
                 caller: "getSummonerMasteries",
                 baseUrl: @_makeUrl(region, api)
@@ -122,20 +120,20 @@ exports.methods = {
                 urlSuffix: "/masteries",
                 getCacheParamsFn: summonerByIdCacheParams('masteries'),
                 maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
-            }, options)
+            }
+        )
 
     # Get one or more summoner's runes.
     #
     # Parameters:
+    # * `region` - The region of the summoner.
     # * `summonerIds` - An array of summoner IDs.
-    # * `options.region` - The region of the summoner.  Defaults to the `defaultRegion` passed
-    #   to the construtor.
     #
     # Returns a hash where keys are summoner IDs and values are `{pages, summonerId}` objects.  If
     # a given summoner ID is not found, the value will be `null` in the results.
-    getSummonerRunes: pb.break (summonerIds, options={}) ->
-        region = options.region ? @defaultRegion
+    getSummonerRunes: pb.break (region, summonerIds) ->
         @_riotMultiGet(
+            region,
             {
                 caller: "getSummonerRunes",
                 baseUrl: @_makeUrl(region, api)
@@ -143,7 +141,8 @@ exports.methods = {
                 urlSuffix: "/runes",
                 getCacheParamsFn: summonerByIdCacheParams('runes'),
                 maxObjs: MAX_SUMMONER_NAMES_PER_REQUEST
-            }, options)
+            }
+        )
 }
 
 
@@ -164,10 +163,3 @@ summonerByIdCacheParams = (objectType) -> (client, region, summonerId) -> {
         objectType: objectType
         params: {summonerId}
     }
-
-# Deprecated `Async` methods
-exports.methods.getSummonersByNameAsync = exports.methods.getSummonersByName
-exports.methods.getSummonersByIdAsync = exports.methods.getSummonersById
-exports.methods.getSummonerNamesAsync = exports.methods.getSummonerNames
-exports.methods.getSummonerMasteriesAsync = exports.methods.getSummonerMasteries
-exports.methods.getSummonerRunesAsync = exports.methods.getSummonerRunes

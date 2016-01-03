@@ -13,7 +13,7 @@ describe 'team API', ->
             "https://na.api.pvp.net/api/lol/na/v2.4/team/by-summoner/24125166",
             'team/bySummoner.json')
 
-        client.getTeamsBySummoner 24125166
+        client.getTeamsBySummoner 'na', 24125166
         .then (value) ->
             expect(value).to.exist
             expect(value[24125166]).to.exist
@@ -29,7 +29,7 @@ describe 'team API', ->
             "https://na.api.pvp.net/api/lol/na/v2.4/team/TEAM-9b6cd830-1ff0-11e2-a4e5-782bcb4d1861",
             'team/byTeamId.json')
 
-        client.getTeams teamId
+        client.getTeams 'na', teamId
         .then (value) ->
             expect(value).to.exist
             expect(value[teamId]).to.exist

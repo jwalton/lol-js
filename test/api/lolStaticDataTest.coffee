@@ -9,7 +9,7 @@ describe 'lol-static-data API', ->
             "https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion?dataById=true",
             'static/championsById.json')
 
-        client.getChampionById 53
+        client.getChampionById 'na', 53
         .then (champion) ->
             expect(champion).to.exist
             expect(champion.name).to.equal "Blitzcrank"
@@ -20,7 +20,7 @@ describe 'lol-static-data API', ->
             "https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion?dataById=false",
             'static/champions.json')
 
-        client.getChampionByKey "Velkoz"
+        client.getChampionByKey 'na', "Velkoz"
         .then (champion) ->
             expect(champion).to.exist
             expect(champion.name).to.equal "Vel'Koz"
@@ -31,6 +31,6 @@ describe 'lol-static-data API', ->
             "https://global.api.pvp.net/api/lol/static-data/na/v1.2/champion?dataById=false",
             'static/champions.json')
 
-        champion = client.getChampionByName "Vel koz"
+        champion = client.getChampionByName 'na', "Vel koz"
         .then (champion) ->
             expect(champion.name).to.equal "Vel'Koz"

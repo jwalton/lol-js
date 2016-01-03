@@ -1,7 +1,30 @@
 # v2.0.0
 
 * Breaking Change - Remove support for matchhistory-v2.2.
+* Breaking Change - Removed `defaultRegion` option from Client.  The following methods no longer take `region` as an
+  option but instead now take it as the first parameter:
+    * `getRecentGamesForSummoner()`
+    * `recentGameToMatch()`
+    * `getChampions()`
+    * `getChampionById()`
+    * `getChampionByKey()`
+    * `getChampionByName()`
+    * `getItems()`
+    * `getItemById()`
+    * `getVersions()`        
+    * `getMatch()`
+    * `populateMatch()`
+    * `getSummonersByName()`
+    * `getSummonersById()`
+    * `getSummonerNames()`
+    * `getSummonerMasteries()`
+    * `getSummonerRunes()`
+    * `getTeamsBySummoner()`
+    * `getTeams()`
+    * `getTeam()`
+
+* Breaking Change - If you want to use Promises, you no longer need to call the `blahBlahAsync` version of a command -
+  instead callbacks are now optional, and any function which takes a callback will return a Promise if no callback is
+  supplied.
 * Add support for matchlist-v2.2.
-* If you want to use Promises, you no longer need to call the `blahBlahAsync` version of a command - instead callbacks
-  are now optional, and any function which takes a callback will return a Promise if no callback is supplied.
 * Bug fixes.

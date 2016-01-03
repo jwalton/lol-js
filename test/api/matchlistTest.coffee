@@ -12,6 +12,6 @@ describe 'matchlist API', ->
             }
         ]
 
-        client.getMatchlistBySummoner 24125166
+        client.getMatchlistBySummoner 'na', 24125166
         .then (matches) ->
             expect(matches.matches.length).to.equal 44

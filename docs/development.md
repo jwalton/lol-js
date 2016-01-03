@@ -32,7 +32,7 @@ api = exports.api = {
 }
 
 exports.methods = {
-    getRecentGamesForSummoner: pb.break (summonerId, options) ->
+    getRecentGamesForSummoner: pb.break (region, summonerId, options) ->
         ...
 }
 ```
@@ -71,8 +71,8 @@ of the following return promises.
   `Client._riotMultiGet(...)` was written to deal with these cases; it caches each value by ID
   individually.  This helps in the case where, for example, you do something like:
 
-      client.getSummonersById([1,2], ...)
-      client.getSummonersById([1], ...)
+      client.getSummonersById('na', [1,2], ...)
+      client.getSummonersById('na', [1], ...)
 
   Here, we've already retrieved summoner 1 and 2 in the first call, so there should be no need to
   fetch summoner 1 again in the second call.  `_riotMultiGet()` takes care of caching this common

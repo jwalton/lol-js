@@ -12,13 +12,13 @@ describe 'game API', ->
             }
         ]
 
-        client.getRecentGamesForSummoner 24125166
+        client.getRecentGamesForSummoner 'na', 24125166
         .then (games) ->
             expect(games.games.length).to.equal 2
             expect(games.matches).to.not.exist
 
     it 'should fetch recent matches for a summoner', ->
-        client = lol.client { apiKey: 'TESTKEY', cache: lol.lruCache(100), defaultRegion: "ru" }
+        client = lol.client { apiKey: 'TESTKEY', cache: lol.lruCache(100) }
         testUtils.expectRequests client, [
             {
                 url: "https://na.api.pvp.net/api/lol/na/v1.3/game/by-summoner/24125166/recent"
@@ -40,7 +40,7 @@ describe 'game API', ->
             }
         ]
 
-        client.getRecentGamesForSummoner 24125166, {region: "na", asMatches: true}
+        client.getRecentGamesForSummoner "na", 24125166, {asMatches: true}
         .then (games) ->
             expect(games.games.length).to.equal 2
             expect(games.matches.length).to.equal 2
@@ -49,7 +49,7 @@ describe 'game API', ->
             expect(games.matches[0].participantIdentities[5].player.summonerName).to.equal "SummonerA"
 
     it 'should convert a recent game to a recent match', ->
-        client = lol.client { apiKey: 'TESTKEY', cache: lol.lruCache(100), defaultRegion: "ru" }
+        client = lol.client { apiKey: 'TESTKEY', cache: lol.lruCache(100) }
 
         # Grab a game to convert
         recentGames = require '../sampleResults/game/recent.json'
@@ -65,7 +65,7 @@ describe 'game API', ->
             }
         ]
 
-        client.recentGameToMatch(game, 24125166, {region: 'na'})
+        client.recentGameToMatch("na", game, 24125166)
         .then (match) ->
             expect(match).to.exist
             expect(match.participantIdentities[1].player.summonerName).to.equal "SummonerB"

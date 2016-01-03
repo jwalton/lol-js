@@ -12,9 +12,8 @@ exports.methods = {
     # Retrieve match history for a summoner.
     #
     # Parameters:
+    # * `region` - The region of the summoner.
     # * `summonerId` - The ID of the summoner.
-    # * `options.region` - The region of the summoner.  Defaults to the `defaultRegion` passed
-    #   to the construtor.
     # * `options.championIds` - Array of championIds to use for fetching games.
     # * `options.rankedQueues` - Array of ranked queue types to use for fetching
     #   games. Non-ranked queue types will be ignored.
@@ -27,9 +26,7 @@ exports.methods = {
     #
     # Returns a promise.
     #
-    getMatchlistBySummoner: pb.break (summonerId, options={}) ->
-        region = options.region ? @defaultRegion
-
+    getMatchlistBySummoner: pb.break (region, summonerId, options={}) ->
         queryParams = {
             championIds:  arrayToList options.championIds
             rankedQueues: arrayToList(options.rankedQueues ? ['RANKED_SOLO_5x5', 'RANKED_TEAM_3x3', 'RANKED_TEAM_5x5'])

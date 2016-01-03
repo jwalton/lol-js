@@ -14,7 +14,7 @@ exports.methods = {
     # Retrieve a list of champions
     #
     # Parameters:
-    # * `options.region` - Region from which to retrieve data.
+    # * `region` - Region from which to retrieve data.
     # * `options.locale` - Locale code for returned data (e.g., en_US, es_ES). If not specified,
     #   the default locale for the region is used.
     # * `options.version` - Data dragon version for returned data. If not specified, the latest
@@ -27,12 +27,10 @@ exports.methods = {
     #   'altimages', 'blurb', 'enemytips', 'image', 'info', 'lore', 'partype', 'passive',
     #   'recommended', 'skins', 'spells', 'stats', 'tags'.
     #
-    getChampions: pb.break (options={}) ->
+    getChampions: pb.break (region, options={}) ->
         options = ld.defaults {}, options, {
-            region: @defaultRegion,
             dataById: false
         }
-        region = options.region ? @defaultRegion
 
         requestParams = {
             caller: "getChampions",
@@ -51,28 +49,30 @@ exports.methods = {
     # Retrieve a champion using its ID.
     #
     # Parameters:
+    # * `region` - Region from which to retrieve data.
     # * `id` - the ID of the champion to retrieve.
     # * `options` are the same as for `getChampions()`, except that `dataById` cannot be specified.
     #
-    getChampionById: pb.break (id, options={}) ->
+    getChampionById: pb.break (region, id, options={}) ->
         options = ld.extend {}, options, {dataById: true}
-        @getChampions(options)
+        @getChampions(region, options)
         .then (champions) -> champions.data[id]
 
     # Retrieve a champion using its key.
     #
     # Parameters:
+    # * `region` - Region from which to retrieve data.
     # * `id` - the ID of the champion to retrieve.
     # * `options` are the same as for `getChampions()`, except that `dataById` cannot be specified.
     #
-    getChampionByKey: pb.break (key, options={}) ->
+    getChampionByKey: pb.break (region, key, options={}) ->
         options = ld.extend {}, options, {dataById: false}
-        @getChampions(options)
+        @getChampions(region, options)
         .then (champions) -> champions.data[key]
 
-    getChampionByName: pb.break (name, options={}) ->
+    getChampionByName: pb.break (region, name, options={}) ->
         options = ld.extend {}, options, {dataById: false}
-        @getChampions(options)
+        @getChampions(region, options)
         .then (champions) ->
             # First try the name as a key, because this is the fastest way to do this.
             answer = champions.data[name]
@@ -89,7 +89,7 @@ exports.methods = {
     # Retrieve a list of items.
     #
     # Parameters:
-    # * `options.region` - Region from which to retrieve data.
+    # * `region` - Region from which to retrieve data.
     # * `options.locale` - Locale code for returned data (e.g., en_US, es_ES). If not specified,
     #   the default locale for the region is used.
     # * `options.version` - Data dragon version for returned data. If not specified, the latest
@@ -102,12 +102,10 @@ exports.methods = {
     #    inStore, into, maps, requiredChampion, sanitizedDescription, specialRecipe, stacks, stats,
     #    tags, tree
     #
-    getItems: pb.break (options={}) ->
+    getItems: pb.break (region, options={}) ->
         options = ld.defaults {}, options, {
-            region: @defaultRegion,
             dataById: false
         }
-        region = options.region ? @defaultRegion
 
         requestParams = {
             caller: "getItems",
@@ -129,8 +127,8 @@ exports.methods = {
     # * `id` - the ID of the item to retrieve.
     # * `options` are the same as for `getItems()`.
     #
-    getItemById: pb.break (id, options={}) ->
-        @getItems(options)
+    getItemById: pb.break (region, id, options={}) ->
+        @getItems(region, options)
         .then (objects) ->
             return objects.data[id]
 
@@ -139,10 +137,8 @@ exports.methods = {
     # Retrieve a list of versions.
     #
     # Parameters:
-    # * `options.region` - Region from which to retrieve data.
-    getVersions: pb.break (options={}) ->
-        region = options?.region ? @defaultRegion
-
+    # * `region` - Region from which to retrieve data.
+    getVersions: pb.break (region, options={}) ->
         requestParams = {
             caller: "getVersions",
             region: region,
@@ -160,12 +156,3 @@ exports.methods = {
     teamNameToId: (teamName) ->
         if teamName.toLowerCase() is "blue" then 100 else 200
 }
-
-# Deprecated `Async` methods
-exports.methods.getChampionsAsync = exports.methods.getChampions
-exports.methods.getChampionByIdAsync = exports.methods.getChampionById
-exports.methods.getChampionByKeyAsync = exports.methods.getChampionByKey
-exports.methods.getChampionByNameAsync = exports.methods.getChampionByName
-exports.methods.getItemsAsync = exports.methods.getItems
-exports.methods.getItemByIdAsync = exports.methods.getItemById
-exports.methods.getVersionsAsync = exports.methods.getVersions

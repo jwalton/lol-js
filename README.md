@@ -12,6 +12,8 @@ for [League of Legends](http://na.leagueoflegends.com/).  There are
 [many node.js packages](https://developer.riotgames.com/discussion/riot-games-api/show/iXR9Vl2A) out
 there which give you access to the Riot API, but none has as complete a feature set as lol.js.
 
+**Note 2.0.0 has breaking changes.**  See the [changelog](./CHANGELOG.md) for details.
+
 Features
 ========
 
@@ -44,10 +46,9 @@ With callbacks:
 var lol = require('lol-js');
 var lolClient = lol.client({
     apiKey: 'blahblahblah',
-    defaultRegion: 'na',
     cache: lol.redisCache({host: '127.0.0.1', port: 6379})
 };
-lolClient.getChampionById(53, {champData: ['all']}, function(err, data) {
+lolClient.getChampionById('na', 53, {champData: ['all']}, function(err, data) {
     console.log("Found ", data.name);
     lolClient.destroy();
 });
@@ -59,10 +60,9 @@ With promises:
 var lol = require('lol-js');
 var lolClient = lol.client({
     apiKey: 'blahblahblah',
-    defaultRegion: 'na',
     cache: lol.redisCache({host: '127.0.0.1', port: 6379})
 };
-lolClient.getChampionById(53, {champData: ['all']})
+lolClient.getChampionById('na', 53, {champData: ['all']})
 .then(function (data) {
     console.log("Found ", data.name);
     lolClient.destroy();
@@ -76,7 +76,6 @@ The first step to using lol-js is to create a new client by calling `lol.client(
 takes a configuation object with the following options:
 
 * `apiKey` - the API key [assigned to you by Riot](https://developer.riotgames.com/).
-* `defaultRegion` - the region to use for queries if none is specified.  Defaults to 'na'.
 * `cache` - a cache object or `null` to disable caching (see below).
 * `cacheTTL` - a `{long, short, flex}` object which controls how long objects are cached
   for.  Each is a value in seconds.  `long` applies to match objects, which don't change very

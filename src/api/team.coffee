@@ -14,15 +14,15 @@ exports.methods = {
     # Gets recent games for this given summoner.
     #
     # Parameters:
+    # * `region` - The region of the summoner.
     # * `summonerIds` - One or more summoner IDs to retrieve teams for.
-    # * `options.region` - The region of the summoner.
     #
     # Returns a hash of lists of TeamDTO objects, indexed by summonerId.
     #
-    getTeamsBySummoner: pb.break (summonerIds, options={}) ->
+    getTeamsBySummoner: pb.break (region, summonerIds) ->
         # TODO: cache each team by teamId here?
-        region = options.region ? @defaultRegion
         @_riotMultiGet(
+            region,
             {
                 caller: "getTeamsBySummoner",
                 baseUrl: "#{@_makeUrl region, api}/by-summoner",
@@ -34,19 +34,20 @@ exports.methods = {
                     params: {summonerId}
                 }),
                 maxObjs: 10
-            }, options)
+            }
+        )
 
     # Gets recent games for this given summoner.
     #
     # Parameters:
+    # * `region` - The region of the team.
     # * `teamIds` - One or more team IDs to retrieve.
-    # * `options.region` - The region of the team.
     #
     # Returns a hash of lists of TeamDTO objects, indexed by teamId.
     #
-    getTeams: pb.break (teamIds, options={}) ->
-        region = options.region ? @defaultRegion
+    getTeams: pb.break (region, teamIds) ->
         @_riotMultiGet(
+            region,
             {
                 caller: "getTeams",
                 baseUrl: "#{@_makeUrl region, api}",
@@ -58,19 +59,15 @@ exports.methods = {
                     params: {teamId}
                 }),
                 maxObjs: 10
-            }, options)
+            }
+        )
 
     # Get record for a single team.
     #
     # This is a convenience wrapper around getTeams which takes a single `teamId`, and returns the
     # team associated with it.
     #
-    getTeam: pb.break (teamId, options={}) ->
-        @getTeams [teamId], options
+    getTeam: pb.break (region, teamId) ->
+        @getTeams region, [teamId]
         .then (answer) -> return answer?[teamId]
 }
-
-# Deprecated `Async` methods
-exports.methods.getTeamsBySummonerAsync = exports.methods.getTeamsBySummoner
-exports.methods.getTeamsAsync = exports.methods.getTeams
-exports.methods.getTeamAsync = exports.methods.getTeam

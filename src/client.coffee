@@ -24,7 +24,6 @@ module.exports = class Client extends EventEmitter
 
     # Options:
     # * `apiKey` - the API key [assigned to you by Riot](https://developer.riotgames.com/).
-    # * `defaultRegion` - the region to use for queries if none is specified.  Defaults to 'na'.
     # * `cache` - a cache object or `null` to disable caching (see below).
     # * `rateLimit` - a list of limit objects.  Each limit object is a `{time, limit}` pair where
     #   `time` is a duration in seconds and `limit` is the maximum number of requests to make in
@@ -35,7 +34,6 @@ module.exports = class Client extends EventEmitter
 
         if !options.apiKey? then throw new Error 'apiKey is required.'
         @apiKey = options.apiKey
-        @defaultRegion = options.defaultRegion ? 'na'
         @cacheTTL = ld.defaults {}, options.cacheTTL, {
             short: 60 * 5  # 5 minutes
             long:  ONE_MONTH_IN_SECONDS
@@ -348,9 +346,9 @@ module.exports = class Client extends EventEmitter
     # * `params.ids` the list of IDs to pass.  These are appended to the baseUrl as a list of comma
     #   seperated strings.
     # * `params.urlSuffix` is appended to the baseUrl after the comma separated list of IDs.
-    # * `params.getCacheParamsFn(client, region, id, options)` - Called to get cache params for an
+    # * `params.getCacheParamsFn(client, region, id)` - Called to get cache params for an
     #   id.
-    # * `params.cacheResultFn(client, region, result, options)` - Called to write a single result
+    # * `params.cacheResultFn(client, region, result)` - Called to write a single result
     #   to the cache.  If null, then result of `getCacheParamsFn()` will be used.
     # * `params.queryParams` is queryParams to pass to _riotRequest().
     # * `params.maxObjs` is the maximum number of ids to pull in a single request.
@@ -359,9 +357,8 @@ module.exports = class Client extends EventEmitter
     #
     # Returns a promise which resolves to a map where keys are the `ids` passed in, and values are
     # either object returned from Riot or `null` if the objects can't be found.
-    _riotMultiGet: (params, options) ->
+    _riotMultiGet: (region, params) ->
         {caller, baseUrl, ids, urlSuffix, getCacheParamsFn, cacheResultFn, queryParams, maxObjs} = params
-        region = options?.region ? @defaultRegion
         if !ld.isArray ids then ids = [ids]
 
         answer = {}
@@ -369,7 +366,7 @@ module.exports = class Client extends EventEmitter
         # Try to fetch each object from the cache
         @Promise.all ids.map (id) =>
             new @Promise (resolve, reject) =>
-                cacheParams = getCacheParamsFn this, region, id, options
+                cacheParams = getCacheParamsFn this, region, id
                 @_validateCacheParams(cacheParams)
                 @cache.get(cacheParams)
                 .then(
@@ -405,7 +402,7 @@ module.exports = class Client extends EventEmitter
                             answer[id] = fetchedObjects[id] ? null
 
                             if answer[id]? and cacheResultsFn?
-                                cacheResultFn this, region, answer[id], options
+                                cacheResultFn this, region, answer[id]
                             else
                                 @cache.set cacheParams, answer[id]
                         return null

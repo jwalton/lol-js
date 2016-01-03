@@ -13,7 +13,7 @@ describe 'summoner API', ->
             "https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/summonera,summonerb",
             'summoner/byName.json')
 
-        client.getSummonersByName ["Summoner A", "SummonerB"]
+        client.getSummonersByName 'na', ["Summoner A", "SummonerB"]
         .then (value) ->
             expect(value).to.exist
             expect(value["Summoner A"]).to.exist
@@ -21,7 +21,7 @@ describe 'summoner API', ->
             expect(value["SummonerB"]).to.exist
 
             # Trying to fetch a second time should fetch from cache.
-            client.getSummonersByName ["Summoner A", "SummonerB"]
+            client.getSummonersByName 'na', ["Summoner A", "SummonerB"]
 
     it 'should fetch 60 summoners by name', ->
         client = lol.client {
@@ -46,7 +46,7 @@ describe 'summoner API', ->
             }
         ]
 
-        value = client.getSummonersByName summoners
+        value = client.getSummonersByName 'na', summoners
         .then (value) ->
             for i in [1..60]
                 expect(value["#{i}"].id).to.equal i
@@ -58,7 +58,7 @@ describe 'summoner API', ->
             "https://na.api.pvp.net/api/lol/na/v1.4/summoner/1,2/masteries",
             'summoner/masteries.json')
 
-        client.getSummonerMasteries [1, 2]
+        client.getSummonerMasteries 'na', [1, 2]
         .then (value) ->
             expect(value).to.exist
             expect(value["1"]).to.exist
@@ -70,7 +70,7 @@ describe 'summoner API', ->
             "https://na.api.pvp.net/api/lol/na/v1.4/summoner/1,2,3",
             'summoner/byId.json')
 
-        client.getSummonerNames [1, 2, 3]
+        client.getSummonerNames 'na', [1, 2, 3]
         .then (value) ->
             expect(value).to.exist
             expect(value["1"]).to.equal 'SummonerA'

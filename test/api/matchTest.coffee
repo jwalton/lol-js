@@ -17,9 +17,9 @@ describe 'match API', ->
                 }
             ]
 
-            client.getMatch 1514152049
+            client.getMatch 'na', 1514152049
             .then (match) ->
-                client.populateMatch match, [
+                client.populateMatch 'na', match, [
                     {championId: 120, teamId: 100, summonerId: 1}
                 ]
                 .then (populated) ->
@@ -39,7 +39,7 @@ describe 'match API', ->
                 }
             ]
 
-            client.getMatch 1514152049, {
+            client.getMatch 'na', 1514152049, {
                 players: [{championId: 120, teamId: 100, summonerId: 1}]
             }
             .then (match) ->
@@ -47,27 +47,9 @@ describe 'match API', ->
 
                 # Try to fetch the match without populating it - should still be populated since
                 # we cached the populated version.
-                client.getMatch 1514152049
+                client.getMatch 'na', 1514152049
             .then (cachedMatch) ->
                 expect(cachedMatch.participantIdentities[0].player.summonerName).to.equal "SummonerA"
-
-        it 'should populate players correctly when the default region differs', ->
-            client = lol.client { apiKey: 'TESTKEY', cache: lol.lruCache(50), defaultRegion: 'ru' }
-            testUtils.expectRequests client, [
-                {
-                    url: "https://na.api.pvp.net/api/lol/na/v2.2/match/1514152049?includeTimeline=false"
-                    sampleFile: 'match/normal.json'
-                }
-                {
-                    url: "https://na.api.pvp.net/api/lol/na/v1.4/summoner/1"
-                    sampleFile: 'summoner/byId.json'
-                }
-            ]
-
-            client.getMatch 1514152049, {
-                region: 'na'
-                players: [{championId: 120, teamId: 100, summonerId: 1}]
-            }
 
     describe '_loadPlayers()', ->
         checkLoadedPlayers = (loadedPlayers) ->
@@ -96,7 +78,7 @@ describe 'match API', ->
                 {championId: 266, teamId: 200, summonerId: 2}
             ]
 
-            client._loadPlayers players
+            client._loadPlayers 'na', players
             .then (loadedPlayers) ->
                 checkLoadedPlayers loadedPlayers
 
@@ -123,7 +105,7 @@ describe 'match API', ->
                 {championKey: "Aatrox", team: "red",  summonerName: "summonerb"}
             ]
 
-            client._loadPlayers players
+            client._loadPlayers 'na', players
             .then (loadedPlayers) ->
                 checkLoadedPlayers loadedPlayers
 
