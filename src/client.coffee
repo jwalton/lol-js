@@ -97,6 +97,7 @@ module.exports = class Client extends EventEmitter
 
         # Queue of `{url, caller, resolve, reject, promise}` objects.
         @_queuedRequests = []
+        @_outstandingRequests = {}
         @_processingRequests = false
 
         @_stats = {
@@ -206,19 +207,20 @@ module.exports = class Client extends EventEmitter
                     #
                     setImmediate doWork
 
-                    {url, caller, allowRetries, resolve, reject, requestId} = @_queuedRequests[0]
+                    {url, caller, allowRetries, resolve, reject, requestId} = @_queuedRequests.shift()
                     @_doRequest({url, caller, allowRetries})
                     .then(resolve, reject)
-                    # Finally, remove the queued request.  Do this after processing, as this means if someone
+                    # Finally, remove the outstanding request.  Do this after processing, as this means if someone
                     # tries to fetch a URL that's already been fetched, they'll still get the existing Promise
                     # instead of potentially having a second request while we're processing the result from the first
-                    # (potentially before updating the cache.)
+                    # (potentially before updating the cache.)  Note we can't just leave the request on the queue,
+                    # since `doWork()` will try to handle more than one request at once.
                     .then(
                         (result) =>
-                            @_queuedRequests.shift()
+                            delete @_outstandingRequests[requestId]
                             return result
                         (err) =>
-                            @_queuedRequests.shift()
+                            delete @_outstandingRequests[requestId]
                             throw err
                     )
 
@@ -263,7 +265,7 @@ module.exports = class Client extends EventEmitter
         if !(params.rateLimit ? true)
             # Not rate limited - do this request immediately instead of adding it to the queue.
             answer = @_doRequest {url, caller, allowRetries: !haveCached}
-        else if (existingRequest = ld.find @_queuedRequests, {requestId})?
+        else if (existingRequest = @_outstandingRequests[requestId])?
             # We already have a request outstanding for this query - wait for it to come back.
             answer = existingRequest.promise
         else
@@ -271,6 +273,7 @@ module.exports = class Client extends EventEmitter
             {promise, resolve, reject} = promiseTools.defer()
             queueItem = {requestId, url, caller, promise, resolve, reject, allowRetries: !haveCached}
             @_queuedRequests.push queueItem
+            @_outstandingRequests[requestId] = queueItem
             @_stats.queueHighWaterMark = Math.max @_stats.queueHighWaterMark, @_queuedRequests.length
             @_startRequestWorker()
             answer = promise
