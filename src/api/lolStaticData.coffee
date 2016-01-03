@@ -138,7 +138,7 @@ exports.methods = {
     #
     # Parameters:
     # * `region` - Region from which to retrieve data.
-    getVersions: pb.break (region, options={}) ->
+    getVersions: pb.break (region) ->
         requestParams = {
             caller: "getVersions",
             region: region,
