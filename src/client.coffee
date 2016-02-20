@@ -394,10 +394,11 @@ module.exports = class Client extends EventEmitter
 
                 return @Promise.all groups.map (group) =>
                     haveCached = ld.every group, (g) -> g.cached?
+                    urlIds = group.map((item) -> encodeURIComponent item.id).join(',')
                     @_riotRequest({
                         caller: caller,
                         region: region,
-                        url: "#{baseUrl}/#{ld.pluck(group, "id").join ","}#{urlSuffix ? ''}"
+                        url: "#{baseUrl}/#{urlIds}#{urlSuffix ? ''}"
                         queryParams: queryParams
                     }, haveCached)
                     .then (fetchedObjects = {}) =>

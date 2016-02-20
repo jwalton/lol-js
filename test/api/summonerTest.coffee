@@ -23,6 +23,18 @@ describe 'summoner API', ->
             # Trying to fetch a second time should fetch from cache.
             client.getSummonersByName 'na', ["Summoner A", "SummonerB"]
 
+    it 'should work for non-ascii summoner names', ->
+        client = lol.client {apiKey: 'TESTKEY'}
+
+        testUtils.expectRequest(client,
+            "https://na.api.pvp.net/api/lol/na/v1.4/summoner/by-name/j%C3%A1%C3%BDce",
+            'summoner/byName.json')
+
+        client.getSummonersByName 'na', ['jáýce']
+        .then (value) ->
+            expect(value).to.exist
+
+
     it 'should fetch 60 summoners by name', ->
         client = lol.client {
             apiKey: 'TESTKEY'
