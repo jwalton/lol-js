@@ -29,7 +29,8 @@ exports.methods = {
     getMatchlistBySummoner: pb.break (region, summonerId, options={}) ->
         queryParams = {
             championIds:  arrayToList options.championIds
-            rankedQueues: arrayToList(options.rankedQueues ? ['RANKED_SOLO_5x5', 'RANKED_TEAM_3x3', 'RANKED_TEAM_5x5'])
+            rankedQueues: arrayToList(options.rankedQueues ?
+                ['RANKED_SOLO_5x5', 'RANKED_TEAM_3x3', 'RANKED_TEAM_5x5', 'TEAM_BUILDER_DRAFT_RANKED_5x5'])
             seasons:      arrayToList options.seasons
             beginIndex:   options.beginIndex
             endIndex:     options.endIndex

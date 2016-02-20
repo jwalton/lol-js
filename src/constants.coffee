@@ -55,4 +55,6 @@ exports.queueTypes = {
     HEXAKILL: {gameQueueConfigId: 98, name: "Twisted Treeline 6x6 Hexakill games"}
     KING_PORO_5x5: {gameQueueConfigId: 300, name: "King Poro games"}
     COUNTER_PICK: {gameQueueConfigId: 310, name: "Nemesis games"}
+    TEAM_BUILDER_DRAFT_UNRANKED_5x5: {gameQueueConfigId: 400, name: "Normal 5v5 Draft Pick games"}
+    TEAM_BUILDER_DRAFT_RANKED_5x5: {gameQueueConfigId: 410, name: "Ranked 5v5 Draft Pick games"}
 }
