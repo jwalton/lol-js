@@ -1,3 +1,9 @@
+# v2.0.2
+
+* Fix error that prevented summoner names with non-ascii characters from being found.
+* Add TEAM_BUILDER_DRAFT_RANKED_5x5 to list of default match types returned when searching for match list for a
+  summoner.
+
 # v2.0.1
 
 * Fix critical bug in how requests are queued.
