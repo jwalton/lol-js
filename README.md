@@ -61,7 +61,7 @@ var lol = require('lol-js');
 var lolClient = lol.client({
     apiKey: 'blahblahblah',
     cache: lol.redisCache({host: '127.0.0.1', port: 6379})
-};
+});
 lolClient.getChampionById('na', 53, {champData: ['all']})
 .then(function (data) {
     console.log("Found ", data.name);
