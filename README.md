@@ -17,6 +17,8 @@ there which give you access to the Riot API, but none has as complete a feature 
 Features
 ========
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/jwalton/lol-js.svg)](https://greenkeeper.io/)
+
 * Support for the following APIs:
   * game-v1.3
   * lol-static-data-v1.2 (partial)
