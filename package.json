@@ -29,22 +29,22 @@
     "url": "https://github.com/jwalton/lol-js"
   },
   "dependencies": {
-    "es6-promise": "^3.0.2",
+    "es6-promise": "^4.2.4",
     "limiter": "^1.0.5",
-    "lodash": "^3.10.1",
+    "lodash": "^4.17.10",
     "lru-cache": "^4.0.0",
-    "promise-breaker": "^3.0.0",
+    "promise-breaker": "^4.1.10",
     "promise-tools": "^1.0.1",
     "redis": "^2.4.2",
     "request": "^2.69.0"
   },
   "devDependencies": {
-    "chai": "^3.4.1",
-    "coffee-coverage": "^1.0.1",
+    "chai": "^4.1.2",
+    "coffee-coverage": "^3.0.0",
     "coffee-script": "^1.8.0",
-    "coveralls": "^2.11.2",
+    "coveralls": "^3.0.0",
     "istanbul": "^0.4.1",
-    "mocha": "^2.1.0"
+    "mocha": "^5.1.1"
   },
   "engines": {
     "node": ">=0.10.1"
